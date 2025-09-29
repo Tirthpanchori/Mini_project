@@ -1,14 +1,18 @@
-from django.contrib.auth.models import User
+from django.contrib.auth.models import AbstractUser
 from django.db import models
 
-class UserProfile(models.Model):
+class User(AbstractUser):
+    email = models.EmailField(unique=True)  # email must be unique
+    username = models.CharField(max_length=150, blank=True, null=True, unique=False)  # not unique
+
     ROLE_CHOICES = (
         ('student', 'Student'),
         ('teacher', 'Teacher'),
     )
-    user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='profile')
-    role = models.CharField(max_length=10, choices=ROLE_CHOICES)
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='student')
+
+    USERNAME_FIELD = 'email'   # login with email
+    REQUIRED_FIELDS = ['username']       # don’t require username
 
     def __str__(self):
-        return f"{self.user.username} - {self.role}"
-
+        return f"{self.email} - {self.role}"

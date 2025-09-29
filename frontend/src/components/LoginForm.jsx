@@ -4,10 +4,10 @@ import { useNavigate } from "react-router-dom";
 import { setTokens } from "../utils/token";
 
 function LoginForm({ method, route }) {
-  const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
+  const [username, setUsername] = useState(""); 
   const [password, setPassword] = useState("");
-  const [role, setRole] = useState("student"); // default role
+  const [role, setRole] = useState("student"); 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
@@ -20,39 +20,31 @@ function LoginForm({ method, route }) {
     try {
       if (method === "login") {
         const response = await api.post(route, {
-          username, // login with username
+          email,       
           password,
         });
 
         // Save tokens
         setTokens(response.data.access, response.data.refresh);
 
-        // Redirect based on role from backend
+        // Redirect based on role
         const userRole = response.data.role.toLowerCase();
         localStorage.setItem("role", response.data.role);
-        if (userRole === "teacher") {
-          navigate("/teacher");
-        } else {
-          navigate("/student");
-        }
+        navigate(userRole === "teacher" ? "/teacher" : "/student");
 
       } else if (method === "register") {
-        // Send username, email, password, role
-        console.log({ username, email, password, role }); // debug log
-
         const response = await api.post(route, {
-          username,
           email,
+          username: username , 
           password,
           role: role.toLowerCase(),
         });
 
-        // After successful registration, go to login page
         navigate("/login");
       }
     } catch (err) {
       console.error("Error during authentication:", err);
-      if (err.response && err.response.data) {
+      if (err.response?.data) {
         setError(JSON.stringify(err.response.data));
       } else {
         setError("Something went wrong. Try again.");
@@ -68,19 +60,19 @@ function LoginForm({ method, route }) {
 
       {method === "register" && (
         <>
-          <label>Username</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-
           <label>Email</label>
           <input
             type="email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
+            required
+          />
+
+          <label>Username </label>
+          <input
+            type="text"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
             required
           />
 
@@ -94,11 +86,11 @@ function LoginForm({ method, route }) {
 
       {method === "login" && (
         <>
-          <label>Username</label>
+          <label>Email</label>
           <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
+            type="email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
             required
           />
         </>
