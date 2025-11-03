@@ -63,61 +63,86 @@ function LoginForm({ method, route }) {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <h2>{method === "login" ? "Login" : "Register"}</h2>
+    <form
+  onSubmit={handleSubmit}
+  className="bg-white  p-8 w-full max-w-md space-y-4"
+>
+  {/* <h2 className="text-2xl font-bold text-center text-blue-600">
+    {method === "login" ? "Login" : "Register"}
+  </h2> */}
 
-      {method === "register" && (
-        <>
-          <label>Username</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
+  {method === "register" && (
+    <>
+      <div className="flex flex-col text-left">
+        <label className="mb-1 text-gray-700 font-medium">Username</label>
+        <input
+          type="text"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
+          required
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-500 outline-none transition"
+        />
+      </div>
 
-          <label>Email</label>
-          <input
-            type="email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+      <div className="flex flex-col text-left">
+        <label className="mb-1 text-gray-700 font-medium">Email</label>
+        <input
+          type="email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-500 outline-none transition"
+        />
+      </div>
 
-          <label>Role</label>
-          <select value={role} onChange={(e) => setRole(e.target.value)}>
-            <option value="student">Student</option>
-            <option value="teacher">Teacher</option>
-          </select>
-        </>
-      )}
+      <div className="flex flex-col text-left">
+        <label className="mb-1 text-gray-700 font-medium">Role</label>
+        <select
+          value={role}
+          onChange={(e) => setRole(e.target.value)}
+          className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-500 outline-none transition"
+        >
+          <option value="student">Student</option>
+          <option value="teacher">Teacher</option>
+        </select>
+      </div>
+    </>
+  )}
 
-      {method === "login" && (
-        <>
-          <label>Username</label>
-          <input
-            type="text"
-            value={username}
-            onChange={(e) => setUsername(e.target.value)}
-            required
-          />
-        </>
-      )}
-
-      <label>Password</label>
+  {method === "login" && (
+    <div className="flex flex-col text-left">
+      <label className="mb-1 text-gray-700 font-medium">Email</label>
       <input
-        type="password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
         required
+        className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-500 outline-none transition"
       />
+    </div>
+  )}
 
-      {error && <p style={{ color: "red" }}>{error}</p>}
+  <div className="flex flex-col text-left">
+    <label className="mb-1 text-gray-700 font-medium">Password</label>
+    <input
+      type="password"
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      required
+      className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-400 focus:border-blue-500 outline-none transition"
+    />
+  </div>
 
-      <button type="submit" disabled={loading}>
-        {loading ? "Loading..." : method === "login" ? "Login" : "Register"}
-      </button>
-    </form>
+  {error && <p className="text-red-500 text-sm">{error}</p>}
+
+  <button
+    type="submit"
+    disabled={loading}
+    className="w-full py-2 px-4 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 disabled:opacity-50 transition"
+  >
+    {loading ? "Loading..." : method === "login" ? "Login" : "Register"}
+  </button>
+</form>
   );
 }
 
