@@ -3,7 +3,7 @@ from django.db import models
 
 class User(AbstractUser):
     email = models.EmailField(unique=True)  # email must be unique
-    username = models.CharField(max_length=150, blank=True, null=True, unique=False)  # not unique
+    username = models.CharField(max_length=150, blank=True, null=True, unique=False) 
 
     ROLE_CHOICES = (
         ('student', 'Student'),

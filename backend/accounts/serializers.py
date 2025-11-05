@@ -11,6 +11,7 @@ class UserSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'email': {'required': True},
             'username': {'required': False},  # optional now
+            # we will see can we make username  True for future
         }
 
     def create(self, validated_data):
