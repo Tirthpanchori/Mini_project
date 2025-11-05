@@ -1,8 +1,10 @@
+import React from "react";
+import Dashboard from "../../components/DashBoard";
+
 function HomeS() {
     return (
         <div>
-            <h1>Welcome to the Student efhj Dashboard</h1>
-            <p>This is the home page for students. Use the navigation to explore the app.</p>
+            <Dashboard />
         </div>
     );
 }

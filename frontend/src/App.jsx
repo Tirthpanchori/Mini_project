@@ -6,6 +6,7 @@ import Login from "./pages/accounts/Login";
 import Register from "./pages/accounts/Register";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
+import CreateQuiz from "./pages/teacher/CreateQuiz";
 
 function Logout() {
   localStorage.clear();
@@ -35,6 +36,14 @@ function App() {
           element={
             <ProtectedRoute allowedRole="teacher">
               <HomeT />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/create-quiz"
+          element={
+            <ProtectedRoute allowedRole="teacher">
+              <CreateQuiz />
             </ProtectedRoute>
           }
         />

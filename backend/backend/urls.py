@@ -8,8 +8,8 @@ urlpatterns = [
 
     path('api/accounts/', include('accounts.urls')),
 
-    # # Quiz management
-    # path('api/quiz/', include('quiz.urls')),
+    # Quiz management
+    path('api/quiz/', include('quiz.urls')),
 
     # # Quiz attempts
     # path('api/attempts/', include('attempts.urls')),

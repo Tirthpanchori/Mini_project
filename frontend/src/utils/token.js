@@ -11,3 +11,10 @@ export const clearTokens = () => {
   localStorage.removeItem("access_token");
   localStorage.removeItem("refresh_token");
 };
+
+
+export const setUserInfo = (name, role, id) => {
+  localStorage.setItem("name", name);
+  localStorage.setItem("role", role);
+  localStorage.setItem("userId", id);
+};

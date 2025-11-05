@@ -4,10 +4,17 @@ import { useNavigate } from "react-router-dom";
 import { setTokens } from "../utils/token";
 
 function LoginForm({ method, route }) {
-  const [email, setEmail] = useState("");
-  const [username, setUsername] = useState(""); 
-  const [password, setPassword] = useState("");
-  const [role, setRole] = useState("student"); 
+  const dummyData = {
+    email: `demo${Math.floor(Math.random() * 10)}@example.com`,
+    password: "password123",
+    role: "student",
+    username: "DemoUser",
+  };
+
+  const [email, setEmail] = useState(dummyData.email);
+  const [username, setUsername] = useState(dummyData.username);
+  const [password, setPassword] = useState(dummyData.password);
+  const [role, setRole] = useState(dummyData.role);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
