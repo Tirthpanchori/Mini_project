@@ -11,8 +11,8 @@ urlpatterns = [
     # Quiz management
     path('api/quiz/', include('quiz.urls')),
 
-    # # Quiz attempts
-    # path('api/attempts/', include('attempts.urls')),
+    # Quiz attempts
+    path('api/attempts/', include('attempts.urls')),
 
     # # Reports / analytics
     # path('api/reports/', include('reports.urls')),
