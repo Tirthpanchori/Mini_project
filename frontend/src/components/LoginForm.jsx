@@ -138,14 +138,15 @@ function LoginForm({ method, route }) {
 
     <label className="block text-sm font-medium text-slate-700">Password</label>
     <div className="relative">
-      <input
-        type={showPassword ? "text" : "password"}
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        required
-        className="mt-1 w-full rounded-xl border border-blue-200 px-3 py-2 pr-10 outline-none transition 
-                  focus:border-blue-500 focus:ring-4 focus:ring-blue-200/60"
-      />
+    <input
+      type={showPassword ? "text" : "password"}
+      value={password}
+      onChange={(e) => setPassword(e.target.value)}
+      required
+      className="mt-1 w-full rounded-xl border border-blue-200 px-3 py-2 pr-10 outline-none transition 
+                focus:border-blue-500 focus:ring-4 focus:ring-blue-200/60"
+    />
+  
 
       <button
         type="button"
