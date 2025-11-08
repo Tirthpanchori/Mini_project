@@ -31,7 +31,7 @@ function Dashboard() {
     if (user.role === "teacher") {
       navigate("/create-quiz");
     } else {
-      navigate("/join-quiz");
+      navigate("/attempt-quiz");
     }
   };
 

@@ -7,6 +7,8 @@ import Register from "./pages/accounts/Register";
 import NotFound from "./pages/NotFound";
 import ProtectedRoute from "./components/ProtectedRoute";
 import CreateQuiz from "./pages/teacher/CreateQuiz";
+import AttemptQuiz from "./pages/student/AttemptQuiz";
+import Start from "./pages/student/Start";
 
 function Logout() {
   localStorage.clear();
@@ -52,6 +54,22 @@ function App() {
           element={
             <ProtectedRoute allowedRole="student">
               <HomeS />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/attempt-quiz"
+          element={
+            <ProtectedRoute allowedRole="student">
+            <AttemptQuiz />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/quiz/:id/start"
+          element={
+            <ProtectedRoute allowedRole="student">
+            <Start />
             </ProtectedRoute>
           }
         />
