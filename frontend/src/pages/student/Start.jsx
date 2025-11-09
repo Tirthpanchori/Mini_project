@@ -23,49 +23,18 @@ function Start() {
   }, [id]);
 
   if (loading)
-    return <p style={{ textAlign: "center", marginTop: "40px" }}>Loading quiz...</p>;
+    return <p className="text-center mt-10 text-gray-600">Loading quiz...</p>;
+
   if (error)
-    return <p style={{ color: "red", textAlign: "center", marginTop: "40px" }}>{error}</p>;
+    return <p className="text-center mt-10 text-red-600 font-medium">{error}</p>;
 
   return (
-    <div
-      style={{
-        minHeight: "100vh",
-        backgroundColor: "#f0f4ff", // soft blue background
-        display: "flex",
-        justifyContent: "center",
-        padding: "40px 20px",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "800px",
-          backgroundColor: "#ffffff",
-          borderRadius: "16px",
-          boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-          padding: "30px 40px",
-        }}
-      >
-        <h2
-          style={{
-            textAlign: "center",
-            fontSize: "28px",
-            fontWeight: "700",
-            color: "#333",
-            marginBottom: "10px",
-          }}
-        >
+    <div className="min-h-screen bg-[#f0f4ff] flex justify-center p-10">
+      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-[0_4px_12px_rgba(0,0,0,0.1)] p-8">
+        <h2 className="text-center text-2xl font-bold text-gray-800 mb-2">
           {quiz.title}
         </h2>
-        <p
-          style={{
-            textAlign: "center",
-            color: "#666",
-            marginBottom: "30px",
-            fontSize: "15px",
-          }}
-        >
+        <p className="text-center text-gray-600 mb-8 text-sm sm:text-base">
           ⏱ Timer: {quiz.timer} sec | Total Questions: {quiz.questions.length}
         </p>
 
@@ -73,52 +42,23 @@ function Start() {
         {quiz.questions.map((q, i) => (
           <div
             key={q.id}
-            style={{
-              backgroundColor: "#f8faff",
-              border: "1px solid #dbe5ff",
-              borderRadius: "10px",
-              padding: "20px",
-              marginBottom: "20px",
-              boxShadow: "0 2px 6px rgba(0, 0, 0, 0.05)",
-            }}
+            className="bg-[#f8faff] border border-[#dbe5ff] rounded-xl p-5 mb-5 shadow-[0_2px_6px_rgba(0,0,0,0.05)]"
           >
-            <h4
-              style={{
-                fontSize: "18px",
-                color: "#1a237e",
-                marginBottom: "12px",
-                fontWeight: "600",
-              }}
-            >
+            <h4 className="text-lg text-[#1a237e] mb-3 font-semibold">
               {i + 1}. {q.text}
             </h4>
 
-            <div style={{ display: "grid", gap: "10px" }}>
+            <div className="grid gap-3">
               {["A", "B", "C", "D"].map((opt) => (
                 <label
                   key={opt}
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    padding: "8px 12px",
-                    borderRadius: "8px",
-                    backgroundColor: "#ffffff",
-                    border: "1px solid #d0d7ff",
-                    cursor: "pointer",
-                    transition: "all 0.2s ease",
-                  }}
-                  onMouseEnter={(e) =>
-                    (e.currentTarget.style.backgroundColor = "#eef3ff")
-                  }
-                  onMouseLeave={(e) =>
-                    (e.currentTarget.style.backgroundColor = "#ffffff")
-                  }
+                  className="flex items-center p-2.5 rounded-lg bg-white border border-[#d0d7ff] cursor-pointer transition-all hover:bg-[#eef3ff]"
                 >
                   <input
                     type="radio"
                     name={`question-${q.id}`}
                     value={opt}
-                    style={{ marginRight: "10px", accentColor: "#4d90fe" }}
+                    className="mr-2 accent-[#4d90fe]"
                   />
                   <span>{q[`option_${opt.toLowerCase()}`]}</span>
                 </label>
@@ -128,20 +68,7 @@ function Start() {
         ))}
 
         <button
-          style={{
-            width: "100%",
-            backgroundColor: "#4d90fe",
-            color: "#fff",
-            border: "none",
-            borderRadius: "10px",
-            padding: "12px",
-            fontSize: "17px",
-            fontWeight: "600",
-            cursor: "pointer",
-            transition: "background-color 0.3s",
-          }}
-          onMouseEnter={(e) => (e.target.style.backgroundColor = "#1a73e8")}
-          onMouseLeave={(e) => (e.target.style.backgroundColor = "#4d90fe")}
+          className="w-full bg-[#4d90fe] text-white rounded-xl py-3 text-lg font-semibold cursor-pointer transition-all hover:bg-[#1a73e8] active:scale-95"
           onClick={() => alert("Submit logic coming soon!")}
         >
           Submit Quiz

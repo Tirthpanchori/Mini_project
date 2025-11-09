@@ -14,7 +14,7 @@ class Quiz(models.Model):
     teacher = models.ForeignKey(User, on_delete=models.CASCADE, limit_choices_to={'role': 'teacher'})
     title = models.CharField(max_length=255)
     code = models.CharField(max_length=6, unique=True, default=generate_unique_code)
-    timer = models.PositiveIntegerField(default=600)  # total time for quiz in seconds
+    timer = models.PositiveIntegerField(default=30)  # total time for quiz in minutes
     total_questions = models.PositiveIntegerField(default=10)  # just a number
     created_at = models.DateTimeField(auto_now_add=True)
 
