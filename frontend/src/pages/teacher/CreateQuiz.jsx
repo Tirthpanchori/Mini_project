@@ -1,10 +1,9 @@
 import { useState } from "react";
 import api from "../../services/api";
-import { CheckCircle } from "lucide-react";
 
 function CreateQuiz() {
   const [title, setTitle] = useState("");
-  const [timer, setTimer] = useState(600); // seconds
+  const [timer, setTimer] = useState(30); // seconds
   const [numQuestions, setNumQuestions] = useState(1);
   const [questions, setQuestions] = useState([]);
   const [quizId, setQuizId] = useState(null);
@@ -85,8 +84,8 @@ function CreateQuiz() {
 
     const formattedQuestions = questions.map((q) => ({
       text: q.text,
-      options: q.options, // ✅ array of strings
-      correct: q.correct, // ✅ number (0 to 3)
+      options: q.options, // array of strings
+      correct: q.correct, // number (0 to 3)
     }));
 
     try {
@@ -95,7 +94,7 @@ function CreateQuiz() {
       });
 
       setMessage("✅ Questions added successfully!");
-      setStep(3); // optional: mark quiz creation complete
+      setStep(3); 
     } catch (err) {
       setMessage(
         "❌ Failed to add questions: " +
@@ -134,12 +133,12 @@ function CreateQuiz() {
 
           <div className="flex gap-4">
             <div className="flex-1">
-              <label className="block text-sm mb-1">Timer (seconds)</label>
+              <label className="block text-sm mb-1">Timer (minutes)</label>
               <input
                 type="number"
-                min="60"
+                min="1"
                 value={timer}
-                onChange={(e) => setTimer(e.target.value)}
+                onChange={(e) => setTimer(e.target.value * 60)}
                 className="border rounded p-2 w-full"
               />
             </div>

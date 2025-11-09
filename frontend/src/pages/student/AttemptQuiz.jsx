@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../../services/api"; // ✅ axios instance with tokens
+import api from "../../services/api";
 
 function AttemptQuiz() {
   const [code, setCode] = useState("");
@@ -18,11 +18,8 @@ function AttemptQuiz() {
     setError("");
 
     try {
-      // ✅ POST request to verify quiz code
       const res = await api.post("/attempts/verify-code/", { code });
       const quiz = res.data.quiz;
-
-      // ✅ Redirect to quiz start page
       navigate(`/quiz/${quiz.quiz_id}/start`, { state: { quiz } });
     } catch (err) {
       setError(err.response?.data?.detail || "Failed to verify quiz code.");
@@ -32,35 +29,9 @@ function AttemptQuiz() {
   };
 
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh",
-        background: "linear-gradient(135deg, #e3eeff 0%, #f7faff 100%)",
-      }}
-    >
-      <div
-        style={{
-          backgroundColor: "#ffffff",
-          padding: "40px 30px",
-          borderRadius: "16px",
-          boxShadow: "0 4px 15px rgba(0, 0, 0, 0.1)",
-          maxWidth: "400px",
-          width: "100%",
-          textAlign: "center",
-        }}
-      >
-        <h2
-          style={{
-            fontFamily: "'Poppins', sans-serif",
-            color: "#1a237e",
-            marginBottom: "20px",
-            fontSize: "26px",
-            fontWeight: "700",
-          }}
-        >
+    <div className="flex justify-center items-center h-screen bg-gradient-to-br from-[#e3eeff] to-[#f7faff]">
+      <div className="bg-white p-10 rounded-2xl shadow-[0_4px_15px_rgba(0,0,0,0.1)] max-w-sm w-full text-center">
+        <h2 className="font-poppins text-[#1a237e] mb-5 text-2xl font-bold">
           Enter Quiz Code
         </h2>
 
@@ -69,57 +40,24 @@ function AttemptQuiz() {
           placeholder="e.g. X7AB9Q"
           value={code}
           onChange={(e) => setCode(e.target.value.toUpperCase())}
-          style={{
-            width: "80%",
-            padding: "12px",
-            fontSize: "16px",
-            border: "2px solid #4d90fe",
-            borderRadius: "8px",
-            marginBottom: "20px",
-            outline: "none",
-            textAlign: "center",
-            letterSpacing: "2px",
-            fontWeight: "500",
-            transition: "0.3s",
-          }}
-          onFocus={(e) => (e.target.style.borderColor = "#1a73e8")}
-          onBlur={(e) => (e.target.style.borderColor = "#4d90fe")}
+          className="w-4/5 p-3 text-lg border-2 border-[#4d90fe] rounded-lg mb-5 outline-none text-center tracking-widest font-medium transition-all duration-300 focus:border-[#1a73e8]"
         />
 
         <button
           onClick={handleStartQuiz}
           disabled={loading}
-          style={{
-            backgroundColor: loading ? "#a0c2ff" : "#4d90fe",
-            color: "white",
-            fontSize: "18px",
-            padding: "10px 25px",
-            border: "none",
-            borderRadius: "8px",
-            cursor: loading ? "not-allowed" : "pointer",
-            transition: "background-color 0.3s, transform 0.1s",
-          }}
-          onMouseOver={(e) =>
-            !loading && (e.target.style.backgroundColor = "#1a73e8")
-          }
-          onMouseOut={(e) =>
-            !loading && (e.target.style.backgroundColor = "#4d90fe")
-          }
-          onMouseDown={(e) => (e.target.style.transform = "scale(0.97)")}
-          onMouseUp={(e) => (e.target.style.transform = "scale(1)")}
+          className={`text-white text-lg px-6 py-2 rounded-lg transition-all duration-300 transform 
+            ${
+              loading
+                ? "bg-[#a0c2ff] cursor-not-allowed"
+                : "bg-[#4d90fe] hover:bg-[#1a73e8] active:scale-95"
+            }`}
         >
           {loading ? "Checking..." : "Start Quiz"}
         </button>
 
         {error && (
-          <p
-            style={{
-              color: "red",
-              marginTop: "15px",
-              fontWeight: "500",
-              fontSize: "15px",
-            }}
-          >
+          <p className="text-red-600 mt-4 font-medium text-sm sm:text-base">
             {error}
           </p>
         )}
