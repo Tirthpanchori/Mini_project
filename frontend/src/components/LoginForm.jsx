@@ -5,7 +5,7 @@ import { setTokens } from "../utils/token";
 
 function LoginForm({ method, route }) {
   const dummyData = {
-    email: `demo${Math.floor(Math.random() * 10)}@example.com`,
+    email: `demo3@example.com`,
     password: "password123",
     role: "student",
     username: "DemoUser",

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import api from "../../services/api";
 
 function Start() {
@@ -7,6 +7,8 @@ function Start() {
   const [quiz, setQuiz] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const [answers, setAnswers] = useState({});
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchQuiz = async () => {
@@ -21,6 +23,44 @@ function Start() {
     };
     fetchQuiz();
   }, [id]);
+
+  // 👇 Function to handle radio button selection
+  function handleOptionChange(questionId, selectedOption) {
+    setAnswers((prev) => ({
+      ...prev,
+      [questionId]: selectedOption,
+    }));
+  }
+
+  // 👇 Submit the answers to backend
+  async function handleSubmit() {
+    if (!quiz) return;
+
+    const formattedAnswers = Object.entries(answers).map(([questionId, selectedOption]) => ({
+      question_id: parseInt(questionId),
+      selected_option: selectedOption,
+    }));
+
+    if (formattedAnswers.length !== quiz.questions.length) {
+      alert("Please answer all questions before submitting!");
+      return;
+    }
+
+    try {
+      const res = await api.post(`/attempts/save/`, {
+        quiz_id: quiz.quiz_id,
+        answers: formattedAnswers,
+      });
+
+      alert("Quiz submitted successfully!");
+      console.log("Result:", res.data);
+
+      navigate(`/result/${quiz.quiz_id}`, { state: res.data });
+    } catch (err) {
+      console.error("Error submitting quiz:", err);
+      alert(err.response?.data?.detail || "Failed to submit quiz.");
+    }
+  }
 
   if (loading)
     return <p className="text-center mt-10 text-gray-600">Loading quiz...</p>;
@@ -52,12 +92,16 @@ function Start() {
               {["A", "B", "C", "D"].map((opt) => (
                 <label
                   key={opt}
-                  className="flex items-center p-2.5 rounded-lg bg-white border border-[#d0d7ff] cursor-pointer transition-all hover:bg-[#eef3ff]"
+                  className={`flex items-center p-2.5 rounded-lg bg-white border cursor-pointer transition-all hover:bg-[#eef3ff] ${
+                    answers[q.id] === opt ? "border-[#4d90fe]" : "border-[#d0d7ff]"
+                  }`}
                 >
                   <input
                     type="radio"
                     name={`question-${q.id}`}
                     value={opt}
+                    checked={answers[q.id] === opt}
+                    onChange={() => handleOptionChange(q.id, opt)}
                     className="mr-2 accent-[#4d90fe]"
                   />
                   <span>{q[`option_${opt.toLowerCase()}`]}</span>
@@ -69,7 +113,7 @@ function Start() {
 
         <button
           className="w-full bg-[#4d90fe] text-white rounded-xl py-3 text-lg font-semibold cursor-pointer transition-all hover:bg-[#1a73e8] active:scale-95"
-          onClick={() => alert("Submit logic coming soon!")}
+          onClick={handleSubmit}
         >
           Submit Quiz
         </button>

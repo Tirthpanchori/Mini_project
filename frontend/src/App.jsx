@@ -9,6 +9,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import CreateQuiz from "./pages/teacher/CreateQuiz";
 import AttemptQuiz from "./pages/student/AttemptQuiz";
 import Start from "./pages/student/Start";
+import ResultPage from "./pages/student/Result";
 
 function Logout() {
   localStorage.clear();
@@ -70,6 +71,14 @@ function App() {
           element={
             <ProtectedRoute allowedRole="student">
             <Start />
+            </ProtectedRoute>
+          }
+        />
+        <Route
+          path="/result/:id"
+          element={
+            <ProtectedRoute allowedRole="student">
+              <ResultPage />
             </ProtectedRoute>
           }
         />
