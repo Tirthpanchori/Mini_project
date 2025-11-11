@@ -3,18 +3,21 @@ import api from "../../services/api";
 
 function CreateQuiz() {
   const [title, setTitle] = useState("");
-  const [timer, setTimer] = useState(30); // seconds
+  const [timer, setTimer] = useState(600); // seconds
   const [numQuestions, setNumQuestions] = useState(1);
   const [questions, setQuestions] = useState([]);
   const [quizId, setQuizId] = useState(null);
   const [quizCode, setQuizCode] = useState("");
   const [message, setMessage] = useState("");
   const [isReady, setIsReady] = useState(false);
-  const [step, setStep] = useState(1); // step 1: create quiz, step 2: add questions
+  const [step, setStep] = useState(1);
+  const [showAIModal, setShowAIModal] = useState(false);
+  const [aiPrompt, setAiPrompt] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
-  // ✅ Step 1 — Create the quiz shell
+  // ✅ Step 1 — Create quiz shell manually
   const handleCreateQuiz = async (e) => {
-    e.preventDefault();
+    if (e) e.preventDefault();
     setMessage("");
 
     try {
@@ -29,7 +32,7 @@ function CreateQuiz() {
       setMessage("✅ Quiz created! Now add questions below.");
       setStep(2);
 
-      // Initialize question objects
+      // initialize empty questions
       const qArray = Array.from({ length: numQuestions }, () => ({
         text: "",
         options: ["", "", "", ""],
@@ -44,7 +47,7 @@ function CreateQuiz() {
     }
   };
 
-  // ✅ Step 2 — Handle questions
+  // ✅ Step 2 — Editable handlers
   const handleQuestionChange = (i, value) => {
     const updated = [...questions];
     updated[i].text = value;
@@ -73,10 +76,9 @@ function CreateQuiz() {
     setIsReady(complete);
   };
 
-  // ✅ Step 3 — Submit questions for that quiz
+  // ✅ Step 3 — Save questions for quiz
   const handleAddQuestions = async () => {
     setMessage("");
-
     if (!quizId) {
       setMessage("❌ Quiz ID not found. Please create the quiz first.");
       return;
@@ -84,8 +86,8 @@ function CreateQuiz() {
 
     const formattedQuestions = questions.map((q) => ({
       text: q.text,
-      options: q.options, // array of strings
-      correct: q.correct, // number (0 to 3)
+      options: q.options,
+      correct: q.correct,
     }));
 
     try {
@@ -94,7 +96,7 @@ function CreateQuiz() {
       });
 
       setMessage("✅ Questions added successfully!");
-      setStep(3); 
+      setStep(3);
     } catch (err) {
       setMessage(
         "❌ Failed to add questions: " +
@@ -103,10 +105,63 @@ function CreateQuiz() {
     }
   };
 
-  // ✅ Copy code helper
+  // ✅ Copy quiz code
   const handleCopy = () => {
     navigator.clipboard.writeText(quizCode);
     setMessage("📋 Quiz code copied!");
+  };
+
+  // 🧠 New: Handle AI Prompt Submit
+  const handleAIPromptSubmit = async () => {
+    if (!aiPrompt.trim()) {
+      alert("Please enter a prompt!");
+      return;
+    }
+
+    setShowAIModal(false);
+    setIsLoading(true);
+    setMessage("🤖 Generating quiz using AI... Please wait.");
+
+    try {
+      // 1️⃣ Call your AI generation endpoint
+      const aiRes = await api.post("/ai/generate-quiz/", {
+        topic: aiPrompt, 
+        num_questions: numQuestions,
+        difficulty: "medium",
+      });
+
+      const aiData = aiRes.data.result?.questions || [];
+
+      // 2️⃣ Create quiz shell
+      const res = await api.post("/quiz/create/", {
+        title,
+        timer,
+        total_questions: aiData.length,
+      });
+
+      setQuizId(res.data.quiz_id);
+      setQuizCode(res.data.code);
+      setMessage("✅ AI Quiz created! You can edit questions below.");
+      setStep(2);
+
+      // 3️⃣ Prefill questions from AI
+      const formatted = aiData.map((q) => ({
+        text: q.question,
+        options: q.options,
+        correct: q.answer,
+      }));
+
+      setQuestions(formatted);
+      checkCompletion(formatted);
+    } catch (err) {
+      console.error(err);
+      setMessage(
+        "❌ Failed to generate quiz using AI: " +
+          (err.response?.data?.detail || "Unknown error")
+      );
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -137,7 +192,7 @@ function CreateQuiz() {
               <input
                 type="number"
                 min="1"
-                value={timer}
+                value={timer / 60}
                 onChange={(e) => setTimer(e.target.value * 60)}
                 className="border rounded p-2 w-full"
               />
@@ -155,12 +210,49 @@ function CreateQuiz() {
             </div>
           </div>
 
-          <button
-            type="submit"
-            className="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded mt-2"
-          >
-            Create Quiz
-          </button>
+          <div className="flex justify-between items-center gap-4 mt-4">
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="bg-gradient-to-r from-green-500 to-emerald-600 hover:from-green-600 hover:to-emerald-700 text-white font-semibold px-5 py-2.5 rounded-xl shadow-md transition-all duration-300 hover:shadow-lg min-w-[140px]"
+            >
+              {isLoading ? "Loading..." : "Create Quiz"}
+            </button>
+
+            <button
+              type="button"
+              onClick={() => {
+                if (!title.trim()) {
+                  alert("⚠️ Please enter a quiz title first!");
+                  return;
+                }
+                setShowAIModal(true);
+              }}
+              className="relative overflow-hidden px-5 py-2.5 rounded-xl font-semibold text-white 
+               bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500
+               hover:from-purple-600 hover:via-pink-500 hover:to-indigo-500
+               shadow-md hover:shadow-lg transition-all duration-500 group min-w-[140px]"
+            >
+              <span className="relative z-10 flex items-center justify-center gap-2">
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="w-5 h-5 animate-pulse"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M13 10V3L4 14h7v7l9-11h-7z"
+                  />
+                </svg>
+                Use AI
+              </span>
+              <div className="absolute inset-0 bg-white/10 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+            </button>
+          </div>
         </form>
       )}
 
@@ -172,7 +264,6 @@ function CreateQuiz() {
               <label className="font-semibold">Question {qi + 1}</label>
               <input
                 type="text"
-                placeholder="Enter question text"
                 value={q.text}
                 onChange={(e) => handleQuestionChange(qi, e.target.value)}
                 className="border rounded p-2 w-full mt-1 mb-2"
@@ -238,6 +329,38 @@ function CreateQuiz() {
       )}
 
       {message && <p className="mt-6 text-center">{message}</p>}
+
+      {/* 💬 AI Prompt Modal */}
+      {showAIModal && (
+        <div className="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 shadow-lg max-w-md w-full">
+            <h2 className="text-xl font-semibold mb-4 text-center">
+              Enter AI Prompt
+            </h2>
+            <textarea
+              rows="3"
+              placeholder="e.g. Generate a quiz on Photosynthesis..."
+              value={aiPrompt}
+              onChange={(e) => setAiPrompt(e.target.value)}
+              className="w-full border rounded-lg p-3 mb-4"
+            />
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowAIModal(false)}
+                className="px-4 py-2 rounded bg-gray-200 hover:bg-gray-300"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleAIPromptSubmit}
+                className="px-4 py-2 rounded bg-indigo-600 text-white hover:bg-indigo-700"
+              >
+                Submit
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
