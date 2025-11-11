@@ -14,6 +14,9 @@ urlpatterns = [
     # Quiz attempts
     path('api/attempts/', include('attempts.urls')),
 
+    # AI Quiz generation
+    path('api/ai/', include('ai_quiz.urls')),
+
     # # Reports / analytics
     # path('api/reports/', include('reports.urls')),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
