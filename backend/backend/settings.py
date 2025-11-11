@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'reports',
     'rest_framework',
     'corsheaders',
+    'ai_quiz',
 ]
 
 MIDDLEWARE = [
