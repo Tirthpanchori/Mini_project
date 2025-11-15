@@ -1,81 +1,82 @@
 import React, { useState, useEffect } from "react";
-import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import api from "../../services/api";
 
-function ResultPage() {
+function ResultTeacher() {
+  const { id: attemptId } = useParams(); // /teacher/results/:id
   const navigate = useNavigate();
-  const location = useLocation();
-  const { id: attemptId } = useParams();
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔹 Step 1: Try to load result (either from location.state or backend)
   useEffect(() => {
-    const fromState = location.state;
-    if (fromState) {
-      // came from immediate quiz completion
-      setResult(fromState);
-      localStorage.setItem("lastAttempt", JSON.stringify(fromState));
-      setLoading(false);
-    } else if (attemptId) {
-      // 🧠 Fetch from backend if route has attempt_id
-      fetchResultFromBackend(attemptId);
-    } else {
-      // try from localStorage
-      const saved = localStorage.getItem("lastAttempt");
-      if (saved) {
-        setResult(JSON.parse(saved));
+    const fetchTeacherResult = async () => {
+      try {
+        const res = await api.get(`quiz/teacher/attempts/result/${attemptId}/`);
+        setResult(res.data);
+      } catch (err) {
+        console.error("Failed to fetch teacher result:", err);
+        setResult(null);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
-    }
-  }, [attemptId, location.state]);
+    };
 
-  // 🔹 Step 2: Fetch result by attempt ID
-  const fetchResultFromBackend = async (id) => {
-    try {
-      const res = await api.get(`/attempts/result/${id}/`);
-      setResult(res.data);
-    } catch (err) {
-      console.error("Failed to fetch result:", err);
-      setResult(null);
-    } finally {
-      setLoading(false);
-    }
-  };
+    fetchTeacherResult();
+  }, [attemptId]);
 
-  // 🔹 Step 3: Handle loading & no data
-  if (loading) {
+  if (loading)
     return (
       <div className="flex items-center justify-center h-screen text-gray-600">
         Loading result...
       </div>
     );
-  }
 
-  if (!result) {
+  if (!result)
     return (
       <div className="text-center mt-10">
         <p className="text-gray-600 mb-4">No result data found.</p>
         <button
-          onClick={() => navigate("/dashboard")}
+          onClick={() => navigate("/teacher")}
           className="bg-blue-600 text-white px-4 py-2 rounded-lg"
         >
           Go Back
         </button>
       </div>
     );
-  }
 
-  const { quiz_title, score, correct_answers, total_questions, results } = result;
+  const {
+    quiz_title,
+    student_name,
+    student_email,
+    attempted_at,
+    score,
+    correct_answers,
+    total_questions,
+    results,
+  } = result;
 
-  
   return (
     <div className="min-h-screen bg-[#f0f4ff] flex justify-center p-10">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow-md p-8">
+      <div className="w-full max-w-4xl bg-white rounded-2xl shadow-md p-8">
         <h2 className="text-center text-3xl font-bold text-gray-800 mb-4">
           {quiz_title || "Quiz Result"}
         </h2>
 
+        {/* Student Info */}
+        <div className="mb-6 text-center">
+          <p className="text-gray-800 text-lg font-semibold">
+            👤 {student_name}
+          </p>
+          <p className="text-gray-500 text-sm">{student_email}</p>
+          <p className="text-gray-500 mt-1">
+            Attempted on:{" "}
+            <span className="font-medium">
+              {new Date(attempted_at).toLocaleString()}
+            </span>
+          </p>
+        </div>
+
+        {/* Score Summary */}
         <div className="text-center mb-6">
           <p className="text-lg text-gray-700">
             Score:{" "}
@@ -86,8 +87,9 @@ function ResultPage() {
           </p>
         </div>
 
+        {/* Detailed Review */}
         <h3 className="text-xl font-semibold text-gray-800 mb-4">
-          Detailed Review
+          Detailed Analysis
         </h3>
         <div className="space-y-4">
           {results.map((q, i) => (
@@ -103,7 +105,7 @@ function ResultPage() {
                 {i + 1}. {q.question_text}
               </h4>
               <p>
-                Your Answer:{" "}
+                Student’s Answer:{" "}
                 <span
                   className={`font-semibold ${
                     q.is_correct ? "text-green-700" : "text-red-600"
@@ -132,12 +134,13 @@ function ResultPage() {
           ))}
         </div>
 
+        {/* Navigation */}
         <div className="text-center mt-8">
           <button
-            onClick={() => navigate("/student")}
+            onClick={() => navigate(-1)}
             className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
           >
-            Back to Dashboard
+            ← Back to Attempts
           </button>
         </div>
       </div>
@@ -145,4 +148,4 @@ function ResultPage() {
   );
 }
 
-export default ResultPage;
+export default ResultTeacher;

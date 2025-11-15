@@ -36,7 +36,11 @@ function Dashboard() {
   };
 
   const handleRecentQuizzes = () => {
-    navigate("/recent-quizzes");
+    if (user.role === "teacher") {
+      navigate("/recent-teacher-quizzes");
+    } else {
+      navigate("/recent-quizzes");
+    }
   };
 
   return (
