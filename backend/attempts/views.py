@@ -87,9 +87,10 @@ class SaveAttemptView(APIView):
         for ans in answers:
             try:
                 question = Question.objects.get(id=ans["question_id"], quiz=quiz)
-                is_correct = ans["selected_option"] == question.correct_option
+                selected_opt = ans["selected_option"]
+                is_correct = selected_opt and selected_opt == question.correct_option
 
-                # 👇 map letters to actual text dynamically
+                # map letters to actual text dynamically
                 option_text_map = {
                     "A": question.option_a,
                     "B": question.option_b,
@@ -100,11 +101,12 @@ class SaveAttemptView(APIView):
                 detailed_results.append({
                     "question_id": question.id,
                     "question_text": question.text,
-                    "selected_option": ans["selected_option"],
-                    "selected_option_text": option_text_map.get(ans["selected_option"], ""),
+                    "selected_option": selected_opt,
+                    "selected_option_text": option_text_map.get(selected_opt, "") if selected_opt else "Not Attempted",
                     "correct_option": question.correct_option,
                     "correct_option_text": option_text_map.get(question.correct_option, ""),
                     "is_correct": is_correct,
+                    "attempted": selected_opt is not None,  # NEW: flag for unattempted
                 })
 
                 if is_correct:
@@ -121,7 +123,7 @@ class SaveAttemptView(APIView):
             SavedAnswer.objects.create(
                 attempt=attempt,
                 question_id=ans["question_id"],
-                selected_option=ans["selected_option"]
+                selected_option=ans["selected_option"]  # will be None for unattempted
             )
 
         return Response(

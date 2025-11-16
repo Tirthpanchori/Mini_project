@@ -12,9 +12,9 @@ class Attempt(models.Model):
     #     return f"{self.student.username} - {self.quiz.title} ({self.score})"
 
 class SavedAnswer(models.Model):
-    attempt = models.ForeignKey(Attempt, on_delete=models.CASCADE, related_name='saved_answers')
-    question = models.ForeignKey(Question, on_delete=models.CASCADE)  # or question_id = models.IntegerField()
-    selected_option = models.CharField(max_length=1, choices=[('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D')])
+    attempt = models.ForeignKey(Attempt, on_delete=models.CASCADE)
+    question = models.ForeignKey(Question, on_delete=models.CASCADE)
+    selected_option = models.CharField(max_length=1, null=True, blank=True)  # Allow NULL
 
-    # def __str__(self):
-    #     return f"Attempt {self.attempt.id} - Q{self.question_id}: {self.selected_option}"
+    def __str__(self):
+        return f"{self.attempt} - {self.question}"
