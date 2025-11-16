@@ -36,6 +36,7 @@ function ResultPage() {
     try {
       const token = localStorage.getItem("access_token");
       console.log("Token being sent:", token);
+      
 
   const response = await axios.post(
   "http://127.0.0.1:8000/api/ai/analyze-weak-topics/",
