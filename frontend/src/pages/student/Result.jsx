@@ -121,15 +121,22 @@ function ResultPage() {
       );
 
       // Expect response to be structured with helpful fields (as in your NLP version)
-      if (response.data && (response.data.success || Object.keys(response.data).length)) {
+      if (
+        response.data &&
+        (response.data.success || Object.keys(response.data).length)
+      ) {
         setAiAnalysis(response.data);
       } else {
-        setAnalysisError(response.data?.error || "Analysis failed or returned empty response.");
+        setAnalysisError(
+          response.data?.error || "Analysis failed or returned empty response."
+        );
       }
     } catch (error) {
       console.error("Analysis error:", error);
       setAnalysisError(
-        error.response?.data?.error || error.message || "Failed to analyze topics. Please try again."
+        error.response?.data?.error ||
+          error.message ||
+          "Failed to analyze topics. Please try again."
       );
     } finally {
       setLoadingAnalysis(false);
@@ -165,9 +172,21 @@ function ResultPage() {
 
   const getErrorPatternBadge = (pattern) => {
     const patterns = {
-      partial_understanding: { icon: "🎯", label: "Partial Understanding", color: "bg-blue-100 text-blue-800" },
-      confused_concepts: { icon: "🔄", label: "Confused Concepts", color: "bg-purple-100 text-purple-800" },
-      fundamental_gap: { icon: "📚", label: "Fundamental Gap", color: "bg-red-100 text-red-800" },
+      partial_understanding: {
+        icon: "🎯",
+        label: "Partial Understanding",
+        color: "bg-blue-100 text-blue-800",
+      },
+      confused_concepts: {
+        icon: "🔄",
+        label: "Confused Concepts",
+        color: "bg-purple-100 text-purple-800",
+      },
+      fundamental_gap: {
+        icon: "📚",
+        label: "Fundamental Gap",
+        color: "bg-red-100 text-red-800",
+      },
     };
     return patterns[pattern] || patterns.fundamental_gap;
   };
@@ -237,7 +256,9 @@ function ResultPage() {
             <button
               onClick={() => setShowAnalysis(false)}
               className={`px-6 py-2 rounded-lg font-medium transition ${
-                !showAnalysis ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                !showAnalysis
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
               Detailed Review
@@ -245,7 +266,9 @@ function ResultPage() {
             <button
               onClick={() => setShowAnalysis(true)}
               className={`px-6 py-2 rounded-lg font-medium transition ${
-                showAnalysis ? "bg-blue-600 text-white" : "bg-gray-200 text-gray-700 hover:bg-gray-300"
+                showAnalysis
+                  ? "bg-blue-600 text-white"
+                  : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
               🧠 AI Analysis with NLP
@@ -256,14 +279,18 @@ function ResultPage() {
           {!showAnalysis ? (
             // Detailed Review
             <>
-              <h3 className="text-xl font-semibold text-gray-800 mb-4">Detailed Review</h3>
+              <h3 className="text-xl font-semibold text-gray-800 mb-4">
+                Detailed Review
+              </h3>
               <div className="space-y-4">
                 {results && results.length > 0 ? (
                   results.map((q, i) => (
                     <div
                       key={q.question_id ?? i}
                       className={`p-4 rounded-lg border ${
-                        q.is_correct ? "border-green-400 bg-green-50" : "border-red-400 bg-red-50"
+                        q.is_correct
+                          ? "border-green-400 bg-green-50"
+                          : "border-red-400 bg-red-50"
                       }`}
                     >
                       <h4 className="font-medium text-gray-800 mb-2">
@@ -271,7 +298,11 @@ function ResultPage() {
                       </h4>
                       <p>
                         Your Answer:{" "}
-                        <span className={`font-semibold ${q.is_correct ? "text-green-700" : "text-red-600"}`}>
+                        <span
+                          className={`font-semibold ${
+                            q.is_correct ? "text-green-700" : "text-red-600"
+                          }`}
+                        >
                           {q.selected_option_text ?? q.selected_option ?? "—"}
                         </span>
                       </p>
@@ -281,17 +312,27 @@ function ResultPage() {
                           {q.correct_option_text ?? q.correct_option ?? "—"}
                         </span>
                       </p>
-                      {q.explanation && <p className="text-sm text-gray-600 mt-2 italic">💡 {q.explanation}</p>}
+                      {q.explanation && (
+                        <p className="text-sm text-gray-600 mt-2 italic">
+                          💡 {q.explanation}
+                        </p>
+                      )}
                       <p>
                         Result:{" "}
-                        <span className={`font-bold ${q.is_correct ? "text-green-700" : "text-red-600"}`}>
+                        <span
+                          className={`font-bold ${
+                            q.is_correct ? "text-green-700" : "text-red-600"
+                          }`}
+                        >
                           {q.is_correct ? "✅ Correct" : "❌ Wrong"}
                         </span>
                       </p>
                     </div>
                   ))
                 ) : (
-                  <p className="text-gray-600">No question-level data available.</p>
+                  <p className="text-gray-600">
+                    No question-level data available.
+                  </p>
                 )}
               </div>
             </>
@@ -301,8 +342,13 @@ function ResultPage() {
               {loadingAnalysis && (
                 <div className="text-center py-12">
                   <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
-                  <p className="text-gray-600">Analyzing your performance with AI & NLP...</p>
-                  <p className="text-sm text-gray-500 mt-2">Extracting key concepts, identifying patterns, and clustering topics...</p>
+                  <p className="text-gray-600">
+                    Analyzing your performance with AI & NLP...
+                  </p>
+                  <p className="text-sm text-gray-500 mt-2">
+                    Extracting key concepts, identifying patterns, and
+                    clustering topics...
+                  </p>
                 </div>
               )}
 
@@ -312,7 +358,10 @@ function ResultPage() {
                     <span>⚠️</span> Analysis Error
                   </h3>
                   <p className="text-red-700 mb-4">{analysisError}</p>
-                  <button onClick={fetchAiAnalysis} className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition">
+                  <button
+                    onClick={fetchAiAnalysis}
+                    className="bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition"
+                  >
                     Try Again
                   </button>
                 </div>
@@ -323,10 +372,16 @@ function ResultPage() {
                   {aiAnalysis.total_incorrect === 0 ? (
                     <div className="bg-gradient-to-r from-green-50 to-emerald-50 border border-green-200 rounded-lg p-8 text-center">
                       <div className="text-6xl mb-4">🎉</div>
-                      <h3 className="text-2xl font-bold text-green-800 mb-2">Perfect Score!</h3>
-                      <p className="text-green-700 text-lg mb-4">{aiAnalysis.overall_analysis}</p>
+                      <h3 className="text-2xl font-bold text-green-800 mb-2">
+                        Perfect Score!
+                      </h3>
+                      <p className="text-green-700 text-lg mb-4">
+                        {aiAnalysis.overall_analysis}
+                      </p>
                       <div className="bg-white rounded-lg p-4 mt-4">
-                        <p className="font-semibold text-gray-800 mb-2">💪 Next Steps:</p>
+                        <p className="font-semibold text-gray-800 mb-2">
+                          💪 Next Steps:
+                        </p>
                         <ul className="space-y-1 text-gray-700">
                           {aiAnalysis.priority_actions?.map((action, i) => (
                             <li key={i} className="flex items-start gap-2">
@@ -348,40 +403,82 @@ function ResultPage() {
 
                           <div className="grid md:grid-cols-2 gap-4 mb-4">
                             <div className="bg-white rounded-lg p-4">
-                              <p className="font-semibold text-gray-800 mb-2 text-sm">🔍 Key Concepts Detected:</p>
+                              <p className="font-semibold text-gray-800 mb-2 text-sm">
+                                🔍 Key Concepts Detected:
+                              </p>
                               <div className="flex flex-wrap gap-2">
-                                {(aiAnalysis.nlp_metadata.top_concepts || []).slice(0, 6).map((concept, i) => (
-                                  <span key={i} className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded text-xs font-medium">{concept}</span>
-                                ))}
+                                {(aiAnalysis.nlp_metadata.top_concepts || [])
+                                  .slice(0, 6)
+                                  .map((concept, i) => (
+                                    <span
+                                      key={i}
+                                      className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded text-xs font-medium"
+                                    >
+                                      {concept}
+                                    </span>
+                                  ))}
                               </div>
                             </div>
 
                             <div className="bg-white rounded-lg p-4">
-                              <p className="font-semibold text-gray-800 mb-2 text-sm">📊 Your Learning Pattern:</p>
+                              <p className="font-semibold text-gray-800 mb-2 text-sm">
+                                📊 Your Learning Pattern:
+                              </p>
                               {(() => {
-                                const pattern = getErrorPatternBadge(aiAnalysis.nlp_metadata.dominant_error_pattern);
-                                return <div className={`${pattern.color} rounded-lg px-3 py-2 text-sm font-medium inline-flex items-center gap-2`}><span>{pattern.icon}</span><span>{pattern.label}</span></div>;
+                                const pattern = getErrorPatternBadge(
+                                  aiAnalysis.nlp_metadata.dominant_error_pattern
+                                );
+                                return (
+                                  <div
+                                    className={`${pattern.color} rounded-lg px-3 py-2 text-sm font-medium inline-flex items-center gap-2`}
+                                  >
+                                    <span>{pattern.icon}</span>
+                                    <span>{pattern.label}</span>
+                                  </div>
+                                );
                               })()}
                             </div>
                           </div>
 
-                          {(aiAnalysis.nlp_metadata.error_patterns) && (
+                          {aiAnalysis.nlp_metadata.error_patterns && (
                             <div className="bg-white rounded-lg p-4">
-                              <p className="font-semibold text-gray-800 mb-3 text-sm">📈 Error Pattern Distribution:</p>
+                              <p className="font-semibold text-gray-800 mb-3 text-sm">
+                                📈 Error Pattern Distribution:
+                              </p>
                               <div className="space-y-2">
-                                {Object.entries(aiAnalysis.nlp_metadata.error_patterns).map(([pattern, count]) => {
-                                  const patternInfo = getErrorPatternBadge(pattern);
-                                  const percentage = aiAnalysis.total_incorrect ? ((count / aiAnalysis.total_incorrect) * 100).toFixed(0) : 0;
+                                {Object.entries(
+                                  aiAnalysis.nlp_metadata.error_patterns
+                                ).map(([pattern, count]) => {
+                                  const patternInfo =
+                                    getErrorPatternBadge(pattern);
+                                  const percentage = aiAnalysis.total_incorrect
+                                    ? (
+                                        (count / aiAnalysis.total_incorrect) *
+                                        100
+                                      ).toFixed(0)
+                                    : 0;
                                   return (
-                                    <div key={pattern} className="flex items-center gap-3">
-                                      <span className="text-lg">{patternInfo.icon}</span>
+                                    <div
+                                      key={pattern}
+                                      className="flex items-center gap-3"
+                                    >
+                                      <span className="text-lg">
+                                        {patternInfo.icon}
+                                      </span>
                                       <div className="flex-1">
                                         <div className="flex justify-between text-sm mb-1">
-                                          <span className="text-gray-700">{patternInfo.label}</span>
-                                          <span className="font-semibold text-gray-600">{count} ({percentage}%)</span>
+                                          <span className="text-gray-700">
+                                            {patternInfo.label}
+                                          </span>
+                                          <span className="font-semibold text-gray-600">
+                                            {count} ({percentage}%)
+                                          </span>
                                         </div>
                                         <div className="w-full bg-gray-200 rounded-full h-2">
-                                          <div className="bg-indigo-600 h-2 rounded-full transition-all duration-500" style={{ width: `${percentage}%` }} />
+                                          <div
+                                            className="bg-indigo-600 h-2 rounded-full transition-all duration-500"
+                                            style={{ width: `${percentage}%` }}
+                                          />
                                         </div>
                                       </div>
                                     </div>
@@ -395,121 +492,233 @@ function ResultPage() {
 
                       {/* Overall analysis card */}
                       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
-                        <h3 className="text-xl font-semibold text-blue-900 mb-3 flex items-center gap-2"><span>📊</span> Overall Performance Analysis</h3>
-                        <p className="text-gray-700 leading-relaxed mb-3">{aiAnalysis.overall_analysis}</p>
+                        <h3 className="text-xl font-semibold text-blue-900 mb-3 flex items-center gap-2">
+                          <span>📊</span> Overall Performance Analysis
+                        </h3>
+                        <p className="text-gray-700 leading-relaxed mb-3">
+                          {aiAnalysis.overall_analysis}
+                        </p>
 
                         {aiAnalysis.learning_style_recommendation && (
                           <div className="bg-blue-100 border border-blue-300 rounded-lg p-3 mb-3">
-                            <p className="font-semibold text-blue-900 mb-1 text-sm">💡 Recommended Learning Approach:</p>
-                            <p className="text-blue-800 text-sm">{aiAnalysis.learning_style_recommendation}</p>
+                            <p className="font-semibold text-blue-900 mb-1 text-sm">
+                              💡 Recommended Learning Approach:
+                            </p>
+                            <p className="text-blue-800 text-sm">
+                              {aiAnalysis.learning_style_recommendation}
+                            </p>
                           </div>
                         )}
 
                         <div className="bg-white rounded-lg p-3 mt-3">
-                          <p className="text-sm text-gray-600"><span className="font-semibold">Estimated Study Time:</span> {aiAnalysis.estimated_study_time}</p>
-                          <p className="text-sm text-gray-600 mt-1"><span className="font-semibold">Questions to Review:</span> {aiAnalysis.total_incorrect ?? 0} out of {total_questions}</p>
+                          <p className="text-sm text-gray-600">
+                            <span className="font-semibold">
+                              Estimated Study Time:
+                            </span>{" "}
+                            {aiAnalysis.estimated_study_time}
+                          </p>
+                          <p className="text-sm text-gray-600 mt-1">
+                            <span className="font-semibold">
+                              Questions to Review:
+                            </span>{" "}
+                            {aiAnalysis.total_incorrect ?? 0} out of{" "}
+                            {total_questions}
+                          </p>
                         </div>
                       </div>
 
                       {/* Conceptual clusters */}
-                      {aiAnalysis.conceptual_clusters && aiAnalysis.conceptual_clusters.length > 0 && (
-                        <div className="bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-lg p-6">
-                          <h3 className="text-xl font-semibold text-teal-900 mb-4 flex items-center gap-2"><span>🔗</span> Connected Concepts</h3>
-                          <p className="text-sm text-teal-800 mb-4">These topics are related. Understanding one will help with the others:</p>
-                          <div className="space-y-3">
-                            {aiAnalysis.conceptual_clusters.map((cluster, idx) => (
-                              <div key={idx} className="bg-white rounded-lg p-4">
-                                <p className="font-semibold text-gray-800 mb-2">{cluster.cluster_name}</p>
-                                <div className="flex flex-wrap gap-2 mb-2">
-                                  {cluster.concepts.map((concept, i) => <span key={i} className="bg-teal-100 text-teal-800 px-2 py-1 rounded text-sm">{concept}</span>)}
+                      {aiAnalysis.conceptual_clusters &&
+                        aiAnalysis.conceptual_clusters.length > 0 && (
+                          <div className="bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-lg p-6">
+                            <h3 className="text-xl font-semibold text-teal-900 mb-4 flex items-center gap-2">
+                              <span>🔗</span> Connected Concepts
+                            </h3>
+                            <p className="text-sm text-teal-800 mb-4">
+                              These topics are related. Understanding one will
+                              help with the others:
+                            </p>
+                            <div className="space-y-3">
+                              {aiAnalysis.conceptual_clusters.map(
+                                (cluster, idx) => (
+                                  <div
+                                    key={idx}
+                                    className="bg-white rounded-lg p-4"
+                                  >
+                                    <p className="font-semibold text-gray-800 mb-2">
+                                      {cluster.cluster_name}
+                                    </p>
+                                    <div className="flex flex-wrap gap-2 mb-2">
+                                      {cluster.concepts.map((concept, i) => (
+                                        <span
+                                          key={i}
+                                          className="bg-teal-100 text-teal-800 px-2 py-1 rounded text-sm"
+                                        >
+                                          {concept}
+                                        </span>
+                                      ))}
+                                    </div>
+                                    <p className="text-sm text-gray-600 italic">
+                                      {cluster.relationship}
+                                    </p>
+                                  </div>
+                                )
+                              )}
+                            </div>
+                          </div>
+                        )}
+
+                      {/* Weak topics breakdown */}
+                      {aiAnalysis.weak_topics &&
+                        aiAnalysis.weak_topics.length > 0 && (
+                          <div className="space-y-4">
+                            <h3 className="text-2xl font-bold text-gray-800">
+                              🎯 Topics Needing Attention
+                            </h3>
+                            {aiAnalysis.weak_topics.map((topic, idx) => (
+                              <div
+                                key={idx}
+                                className={`rounded-lg border-2 p-6 ${getSeverityColor(
+                                  topic.severity
+                                )}`}
+                              >
+                                <div className="flex justify-between items-start mb-4">
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-2">
+                                      <span className="text-2xl">
+                                        {getSeverityIcon(topic.severity)}
+                                      </span>
+                                      <h4 className="text-xl font-bold">
+                                        {topic.topic}
+                                      </h4>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                      <p className="text-sm uppercase font-semibold tracking-wide">
+                                        {topic.severity} Priority
+                                      </p>
+                                      {topic.error_pattern && (
+                                        <span
+                                          className={`text-xs px-2 py-1 rounded ${
+                                            getErrorPatternBadge(
+                                              topic.error_pattern
+                                            ).color
+                                          }`}
+                                        >
+                                          {
+                                            getErrorPatternBadge(
+                                              topic.error_pattern
+                                            ).icon
+                                          }{" "}
+                                          {
+                                            getErrorPatternBadge(
+                                              topic.error_pattern
+                                            ).label
+                                          }
+                                        </span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    <p className="text-sm text-gray-600">
+                                      Questions:{" "}
+                                      {topic.questions_affected?.join(", ")}
+                                    </p>
+                                  </div>
                                 </div>
-                                <p className="text-sm text-gray-600 italic">{cluster.relationship}</p>
+
+                                <div className="bg-white rounded-lg p-4 mb-3">
+                                  <p className="font-semibold text-gray-800 mb-2">
+                                    📝 What went wrong:
+                                  </p>
+                                  <p className="text-gray-700">
+                                    {topic.description}
+                                  </p>
+                                </div>
+
+                                {topic.common_misconception && (
+                                  <div className="bg-white rounded-lg p-4 mb-3">
+                                    <p className="font-semibold text-gray-800 mb-2">
+                                      ⚠️ Common Misconception:
+                                    </p>
+                                    <p className="text-gray-700">
+                                      {topic.common_misconception}
+                                    </p>
+                                  </div>
+                                )}
+
+                                {topic.conceptual_relationships && (
+                                  <div className="bg-white rounded-lg p-4 mb-3">
+                                    <p className="font-semibold text-gray-800 mb-2">
+                                      🔗 Related to Other Topics:
+                                    </p>
+                                    <p className="text-gray-700 text-sm">
+                                      {topic.conceptual_relationships}
+                                    </p>
+                                  </div>
+                                )}
+
+                                {topic.key_concepts_to_learn && (
+                                  <div className="bg-white rounded-lg p-4 mb-3">
+                                    <p className="font-semibold text-gray-800 mb-2">
+                                      🔑 Key Concepts to Learn:
+                                    </p>
+                                    <div className="flex flex-wrap gap-2">
+                                      {topic.key_concepts_to_learn.map(
+                                        (c, i) => (
+                                          <span
+                                            key={i}
+                                            className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium"
+                                          >
+                                            {c}
+                                          </span>
+                                        )
+                                      )}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {topic.study_recommendations && (
+                                  <div className="bg-white rounded-lg p-4">
+                                    <p className="font-semibold text-gray-800 mb-2">
+                                      💡 How to Improve:
+                                    </p>
+                                    <ul className="space-y-2">
+                                      {topic.study_recommendations.map(
+                                        (rec, i) => (
+                                          <li
+                                            key={i}
+                                            className="flex items-start gap-2 text-gray-700"
+                                          >
+                                            <span className="text-blue-600 font-bold">
+                                              {i + 1}.
+                                            </span>
+                                            <span>{rec}</span>
+                                          </li>
+                                        )
+                                      )}
+                                    </ul>
+                                  </div>
+                                )}
                               </div>
                             ))}
                           </div>
-                        </div>
-                      )}
-
-                      {/* Weak topics breakdown */}
-                      {aiAnalysis.weak_topics && aiAnalysis.weak_topics.length > 0 && (
-                        <div className="space-y-4">
-                          <h3 className="text-2xl font-bold text-gray-800">🎯 Topics Needing Attention</h3>
-                          {aiAnalysis.weak_topics.map((topic, idx) => (
-                            <div key={idx} className={`rounded-lg border-2 p-6 ${getSeverityColor(topic.severity)}`}>
-                              <div className="flex justify-between items-start mb-4">
-                                <div className="flex-1">
-                                  <div className="flex items-center gap-2 mb-2">
-                                    <span className="text-2xl">{getSeverityIcon(topic.severity)}</span>
-                                    <h4 className="text-xl font-bold">{topic.topic}</h4>
-                                  </div>
-                                  <div className="flex items-center gap-2">
-                                    <p className="text-sm uppercase font-semibold tracking-wide">{topic.severity} Priority</p>
-                                    {topic.error_pattern && (
-                                      <span className={`text-xs px-2 py-1 rounded ${getErrorPatternBadge(topic.error_pattern).color}`}>
-                                        {getErrorPatternBadge(topic.error_pattern).icon} {getErrorPatternBadge(topic.error_pattern).label}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                                <div className="text-right">
-                                  <p className="text-sm text-gray-600">Questions: {topic.questions_affected?.join(", ")}</p>
-                                </div>
-                              </div>
-
-                              <div className="bg-white rounded-lg p-4 mb-3">
-                                <p className="font-semibold text-gray-800 mb-2">📝 What went wrong:</p>
-                                <p className="text-gray-700">{topic.description}</p>
-                              </div>
-
-                              {topic.common_misconception && (
-                                <div className="bg-white rounded-lg p-4 mb-3">
-                                  <p className="font-semibold text-gray-800 mb-2">⚠️ Common Misconception:</p>
-                                  <p className="text-gray-700">{topic.common_misconception}</p>
-                                </div>
-                              )}
-
-                              {topic.conceptual_relationships && (
-                                <div className="bg-white rounded-lg p-4 mb-3">
-                                  <p className="font-semibold text-gray-800 mb-2">🔗 Related to Other Topics:</p>
-                                  <p className="text-gray-700 text-sm">{topic.conceptual_relationships}</p>
-                                </div>
-                              )}
-
-                              {topic.key_concepts_to_learn && (
-                                <div className="bg-white rounded-lg p-4 mb-3">
-                                  <p className="font-semibold text-gray-800 mb-2">🔑 Key Concepts to Learn:</p>
-                                  <div className="flex flex-wrap gap-2">
-                                    {topic.key_concepts_to_learn.map((c, i) => <span key={i} className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm font-medium">{c}</span>)}
-                                  </div>
-                                </div>
-                              )}
-
-                              {topic.study_recommendations && (
-                                <div className="bg-white rounded-lg p-4">
-                                  <p className="font-semibold text-gray-800 mb-2">💡 How to Improve:</p>
-                                  <ul className="space-y-2">
-                                    {topic.study_recommendations.map((rec, i) => (
-                                      <li key={i} className="flex items-start gap-2 text-gray-700">
-                                        <span className="text-blue-600 font-bold">{i + 1}.</span>
-                                        <span>{rec}</span>
-                                      </li>
-                                    ))}
-                                  </ul>
-                                </div>
-                              )}
-                            </div>
-                          ))}
-                        </div>
-                      )}
+                        )}
 
                       {/* Priority action plan */}
                       {aiAnalysis.priority_actions && (
                         <div className="bg-gradient-to-r from-purple-50 to-pink-50 border border-purple-200 rounded-lg p-6">
-                          <h3 className="text-xl font-semibold text-purple-900 mb-4 flex items-center gap-2"><span>🚀</span> Your Action Plan</h3>
+                          <h3 className="text-xl font-semibold text-purple-900 mb-4 flex items-center gap-2">
+                            <span>🚀</span> Your Action Plan
+                          </h3>
                           <div className="space-y-3">
                             {aiAnalysis.priority_actions.map((action, i) => (
-                              <div key={i} className="bg-white rounded-lg p-4 flex items-start gap-3">
-                                <div className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">{i + 1}</div>
+                              <div
+                                key={i}
+                                className="bg-white rounded-lg p-4 flex items-start gap-3"
+                              >
+                                <div className="bg-purple-600 text-white rounded-full w-8 h-8 flex items-center justify-center font-bold flex-shrink-0">
+                                  {i + 1}
+                                </div>
                                 <p className="text-gray-700 pt-1">{action}</p>
                               </div>
                             ))}
@@ -518,7 +727,10 @@ function ResultPage() {
                       )}
 
                       <div className="text-center">
-                        <button onClick={fetchAiAnalysis} className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition">
+                        <button
+                          onClick={fetchAiAnalysis}
+                          className="bg-gray-200 text-gray-700 px-6 py-2 rounded-lg hover:bg-gray-300 transition"
+                        >
                           🔄 Refresh Analysis
                         </button>
                       </div>
@@ -530,8 +742,18 @@ function ResultPage() {
           )}
 
           <div className="text-center mt-8 space-x-4">
-            <button onClick={() => navigate("/student")} className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition">Back to Dashboard</button>
-            <button onClick={() => navigate("/quiz/new")} className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition">Take Another Quiz</button>
+            <button
+              onClick={() => navigate("/student")}
+              className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
+            >
+              Back to Dashboard
+            </button>
+            <button
+              onClick={() => navigate("/quiz/new")}
+              className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
+            >
+              Take Another Quiz
+            </button>
           </div>
         </div>
       </div>

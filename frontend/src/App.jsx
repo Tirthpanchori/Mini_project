@@ -9,11 +9,14 @@ import ProtectedRoute from "./components/ProtectedRoute";
 import CreateQuiz from "./pages/teacher/CreateQuiz";
 import AttemptQuiz from "./pages/student/AttemptQuiz";
 import Start from "./pages/student/Start";
+<<<<<<< HEAD
 import ResultPage from "./pages/student/Result";
 import RecentQuizzes from "./pages/student/RecentQuiz";
 import RecentTeacherQuizzes from "./pages/teacher/RecentQuiz";
 import StudentsQuiz from "./pages/teacher/StudentsQuiz";
 import ResultTeacher from "./pages/teacher/Result";
+=======
+>>>>>>> b25a1eac75d8df2e4d53e6ea5f5f275cef259bb3
 
 function Logout() {
   localStorage.clear();
@@ -66,7 +69,11 @@ function App() {
           path="/attempt-quiz"
           element={
             <ProtectedRoute allowedRole="student">
+<<<<<<< HEAD
               <AttemptQuiz />
+=======
+            <AttemptQuiz />
+>>>>>>> b25a1eac75d8df2e4d53e6ea5f5f275cef259bb3
             </ProtectedRoute>
           }
         />
@@ -74,6 +81,7 @@ function App() {
           path="/quiz/:id/start"
           element={
             <ProtectedRoute allowedRole="student">
+<<<<<<< HEAD
               <Start />
             </ProtectedRoute>
           }
@@ -91,6 +99,9 @@ function App() {
           element={
             <ProtectedRoute allowedRole="student">
               <RecentQuizzes />
+=======
+            <Start />
+>>>>>>> b25a1eac75d8df2e4d53e6ea5f5f275cef259bb3
             </ProtectedRoute>
           }
         />
