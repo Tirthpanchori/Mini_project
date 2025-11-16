@@ -221,7 +221,8 @@ function ResultPage() {
       </div>
     );
   }
-
+  console.log("Tirth check");
+  
   // destructure safely
   const {
     quiz_title,
@@ -238,7 +239,7 @@ function ResultPage() {
           <h2 className="text-center text-3xl font-bold text-gray-800 mb-4">
             {quiz_title || "Quiz Result"}
           </h2>
-
+          
           <div className="text-center mb-6">
             <p className="text-lg text-gray-700">
               Score:{" "}
