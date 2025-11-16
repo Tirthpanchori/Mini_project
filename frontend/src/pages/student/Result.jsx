@@ -748,12 +748,12 @@ function ResultPage() {
             >
               Back to Dashboard
             </button>
-            <button
+            {/* <button
               onClick={() => navigate("/quiz/new")}
               className="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 transition"
             >
               Take Another Quiz
-            </button>
+            </button> */}
           </div>
         </div>
       </div>
