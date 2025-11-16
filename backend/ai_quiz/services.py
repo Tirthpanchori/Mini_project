@@ -19,8 +19,8 @@ HEADERS = {
 
 def analyze_weak_topics_with_ai(quiz_results: List[Dict[str, Any]]) -> Dict[str, Any]:
     """
-    Uses AI to deeply analyze incorrect answers and identify specific weak topics,
-    concepts, and misconceptions.
+    Uses AI with NLP techniques to deeply analyze incorrect answers and identify 
+    specific weak topics, concepts, and misconceptions.
     
     Args:
         quiz_results: List of question results with structure:
@@ -58,24 +58,110 @@ def analyze_weak_topics_with_ai(quiz_results: List[Dict[str, Any]]) -> Dict[str,
             "estimated_study_time": "0 hours - just keep reviewing!"
         }
     
-    # Prepare the analysis prompt
+    # NLP Enhancement 1: Extract key terms and concepts from questions
+    def extract_key_terms(text: str) -> List[str]:
+        """Extract important terms using simple keyword extraction"""
+        # Remove common words and focus on domain-specific terms
+        stop_words = {'the', 'a', 'an', 'is', 'are', 'was', 'were', 'in', 'on', 'at', 
+                      'to', 'for', 'of', 'with', 'by', 'from', 'what', 'which', 'how'}
+        words = re.findall(r'\b[a-zA-Z]{3,}\b', text.lower())
+        return [w for w in words if w not in stop_words][:10]  # Top 10 terms
+    
+    # NLP Enhancement 2: Calculate semantic similarity between wrong and correct answers
+    def calculate_answer_similarity(wrong: str, correct: str) -> str:
+        """Determine if answers are conceptually similar or completely different"""
+        wrong_terms = set(extract_key_terms(wrong))
+        correct_terms = set(extract_key_terms(correct))
+        
+        if not wrong_terms or not correct_terms:
+            return "unknown"
+        
+        overlap = len(wrong_terms & correct_terms) / len(correct_terms)
+        
+        if overlap > 0.5:
+            return "partial_understanding"  # Student has some related knowledge
+        elif overlap > 0.2:
+            return "confused_concepts"  # Student confusing similar concepts
+        else:
+            return "fundamental_gap"  # Complete misunderstanding
+    
+    # NLP Enhancement 3: Identify question patterns and types
+    def identify_question_type(question: str) -> str:
+        """Classify question type based on linguistic patterns"""
+        q_lower = question.lower()
+        
+        if any(word in q_lower for word in ['why', 'explain', 'describe']):
+            return "conceptual"
+        elif any(word in q_lower for word in ['calculate', 'compute', 'solve']):
+            return "computational"
+        elif any(word in q_lower for word in ['compare', 'contrast', 'difference']):
+            return "comparative"
+        elif any(word in q_lower for word in ['when', 'where', 'who', 'what year']):
+            return "factual"
+        elif any(word in q_lower for word in ['apply', 'use', 'implement']):
+            return "application"
+        else:
+            return "general"
+    
+    # Prepare enhanced analysis with NLP features
     questions_summary = []
+    all_key_terms = []
+    error_patterns = {
+        "partial_understanding": 0,
+        "confused_concepts": 0,
+        "fundamental_gap": 0
+    }
+    question_type_errors = {}
+    
     for idx, q in enumerate(incorrect_questions, 1):
+        question_text = q.get("question_text", "")
+        your_answer = q.get("selected_option_text", "")
+        correct_answer = q.get("correct_option_text", "")
+        
+        # Extract NLP features
+        key_terms = extract_key_terms(question_text)
+        all_key_terms.extend(key_terms)
+        similarity_type = calculate_answer_similarity(your_answer, correct_answer)
+        q_type = identify_question_type(question_text)
+        
+        # Track patterns
+        error_patterns[similarity_type] += 1
+        question_type_errors[q_type] = question_type_errors.get(q_type, 0) + 1
+        
         questions_summary.append({
             "number": idx,
-            "question": q.get("question_text", ""),
-            "your_answer": q.get("selected_option_text", ""),
-            "correct_answer": q.get("correct_option_text", ""),
-            "explanation": q.get("explanation", "")
+            "question": question_text,
+            "your_answer": your_answer,
+            "correct_answer": correct_answer,
+            "explanation": q.get("explanation", ""),
+            "key_terms": key_terms,
+            "error_pattern": similarity_type,
+            "question_type": q_type
         })
+    
+    # NLP Enhancement 4: Find most frequent concepts (simple topic modeling)
+    from collections import Counter
+    term_frequency = Counter(all_key_terms)
+    top_concepts = [term for term, _ in term_frequency.most_common(8)]
+    
+    # NLP Enhancement 5: Identify learning style from error patterns
+    total_errors = len(incorrect_questions)
+    learning_insight = ""
+    if error_patterns["partial_understanding"] / total_errors > 0.5:
+        learning_insight = "Shows partial understanding; needs reinforcement and examples"
+    elif error_patterns["confused_concepts"] / total_errors > 0.5:
+        learning_insight = "Confusing similar concepts; needs clear differentiation"
+    elif error_patterns["fundamental_gap"] / total_errors > 0.5:
+        learning_insight = "Has fundamental gaps; needs foundational review"
     
     messages = [
         {
             "role": "system",
             "content": (
-                "You are an expert educational analyst specializing in identifying "
-                "knowledge gaps and learning needs. Analyze quiz results to identify "
-                "specific topics, concepts, and skills the student needs to improve. "
+                "You are an expert educational analyst with NLP capabilities specializing in "
+                "identifying knowledge gaps and learning needs. Use the provided NLP analysis "
+                "(key terms, error patterns, question types) to identify specific topics, "
+                "concepts, and skills the student needs to improve. "
                 "Provide actionable, personalized recommendations. "
                 "Respond ONLY in valid JSON format."
             )
@@ -83,9 +169,16 @@ def analyze_weak_topics_with_ai(quiz_results: List[Dict[str, Any]]) -> Dict[str,
         {
             "role": "user",
             "content": f"""
-Analyze the following incorrect quiz answers and identify specific weak topics and concepts:
+Analyze the following incorrect quiz answers with NLP-enhanced insights:
 
+QUESTIONS WITH NLP ANALYSIS:
 {json.dumps(questions_summary, indent=2)}
+
+NLP INSIGHTS:
+- Frequently appearing concepts: {', '.join(top_concepts)}
+- Error pattern distribution: {json.dumps(error_patterns)}
+- Question types with most errors: {json.dumps(question_type_errors)}
+- Learning insight: {learning_insight}
 
 Provide a detailed analysis in the following JSON format:
 
@@ -97,14 +190,24 @@ Provide a detailed analysis in the following JSON format:
       "questions_affected": [1, 2],
       "description": "Clear explanation of what the student misunderstands",
       "common_misconception": "The specific misconception identified",
+      "error_pattern": "partial_understanding|confused_concepts|fundamental_gap",
       "key_concepts_to_learn": ["concept 1", "concept 2"],
       "study_recommendations": [
         "Specific actionable study tip 1",
         "Specific actionable study tip 2"
-      ]
+      ],
+      "conceptual_relationships": "How this topic relates to others they struggle with"
     }}
   ],
-  "overall_analysis": "Brief 2-3 sentence summary of student's performance pattern",
+  "overall_analysis": "Brief 2-3 sentence summary using NLP insights about patterns",
+  "learning_style_recommendation": "Suggested approach based on error patterns",
+  "conceptual_clusters": [
+    {{
+      "cluster_name": "Group of related concepts",
+      "concepts": ["concept1", "concept2"],
+      "relationship": "How they're connected"
+    }}
+  ],
   "priority_actions": [
     "Most important thing to work on first",
     "Second priority"
@@ -113,12 +216,16 @@ Provide a detailed analysis in the following JSON format:
 }}
 
 Rules:
-- Identify 2-5 distinct weak topics (don't over-group or under-group)
+- Use the NLP insights (key terms, error patterns) to identify 2-5 distinct weak topics
 - Be specific: "Photosynthesis light reactions" not just "Biology"
-- Focus on conceptual gaps, not just facts
+- Group related concepts based on key term overlap
+- Consider error patterns when making recommendations:
+  * partial_understanding → provide examples and practice
+  * confused_concepts → focus on differentiating similar ideas
+  * fundamental_gap → build from basics
 - Severity: critical (<40% on topic), high (40-59%), moderate (60-79%)
-- Make recommendations actionable and specific
-- Analyze patterns in wrong answers (e.g., confusing similar concepts)
+- Identify conceptual clusters that connect multiple weak topics
+- Make recommendations match the identified learning style
 - Output ONLY valid JSON, no markdown or extra text
 """
         }
@@ -128,11 +235,11 @@ Rules:
         "model": GROK_MODEL,
         "messages": messages,
         "temperature": 0.3,  # Lower temperature for more focused analysis
-        "max_tokens": 2000,
+        "max_tokens": 2500,  # Increased for richer analysis
     }
     
     try:
-        logger.info(f"Sending request to {GROK_API_URL} for topic analysis")
+        logger.info(f"Sending NLP-enhanced request to {GROK_API_URL} for topic analysis")
         resp = requests.post(GROK_API_URL, headers=HEADERS, json=payload, timeout=60)
         resp.raise_for_status()
     except requests.exceptions.Timeout:
@@ -195,7 +302,16 @@ Rules:
         analysis = json.loads(json_text)
         analysis["success"] = True
         analysis["total_incorrect"] = len(incorrect_questions)
-        logger.info(f"Successfully analyzed {len(incorrect_questions)} incorrect answers")
+        
+        # Add NLP metadata to response
+        analysis["nlp_metadata"] = {
+            "top_concepts": top_concepts,
+            "error_patterns": error_patterns,
+            "question_type_distribution": question_type_errors,
+            "dominant_error_pattern": max(error_patterns, key=error_patterns.get)
+        }
+        
+        logger.info(f"Successfully analyzed {len(incorrect_questions)} incorrect answers with NLP")
         return analysis
     except json.JSONDecodeError as e:
         logger.error(f"Failed to parse AI response as JSON: {e}\nText: {text[:500]}")
@@ -203,8 +319,8 @@ Rules:
             "success": False,
             "error": "Failed to parse AI analysis. Please try again."
         }
-
-
+    
+    
 def generate_quiz_with_ai(topic_or_passage: str, num_questions: int = 5, difficulty: str = "medium", temperature: float = 0.1):
     """
     Calls the model and returns parsed JSON list of questions.

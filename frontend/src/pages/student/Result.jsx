@@ -37,16 +37,16 @@ function ResultPage() {
       const token = localStorage.getItem("access_token");
       console.log("Token being sent:", token);
 
-  const response = await axios.post(
-  "http://127.0.0.1:8000/api/ai/analyze-weak-topics/",
-  { quiz_results: result.results },
-  {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-  }
-);
+      const response = await axios.post(
+        "http://127.0.0.1:8000/api/ai/analyze-weak-topics/",
+        { quiz_results: result.results },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
 
       if (response.data.success) {
         setAiAnalysis(response.data);
@@ -107,6 +107,28 @@ function ResultPage() {
     }
   };
 
+  // NEW: Get error pattern display info
+  const getErrorPatternBadge = (pattern) => {
+    const patterns = {
+      partial_understanding: {
+        icon: "🎯",
+        label: "Partial Understanding",
+        color: "bg-blue-100 text-blue-800"
+      },
+      confused_concepts: {
+        icon: "🔄",
+        label: "Confused Concepts",
+        color: "bg-purple-100 text-purple-800"
+      },
+      fundamental_gap: {
+        icon: "📚",
+        label: "Fundamental Gap",
+        color: "bg-red-100 text-red-800"
+      }
+    };
+    return patterns[pattern] || patterns.fundamental_gap;
+  };
+
   return (
     <div className="min-h-screen bg-[#f0f4ff] flex justify-center p-10">
       <div className="w-full max-w-4xl space-y-6">
@@ -145,7 +167,7 @@ function ResultPage() {
                   : "bg-gray-200 text-gray-700 hover:bg-gray-300"
               }`}
             >
-              AI Weak Topics Analysis
+              🧠 AI Analysis with NLP
             </button>
           </div>
 
@@ -205,16 +227,16 @@ function ResultPage() {
               </div>
             </>
           ) : (
-            // AI-Powered Weak Topics Analysis
+            // AI-Powered Weak Topics Analysis with NLP
             <div className="space-y-6">
               {loadingAnalysis && (
                 <div className="text-center py-12">
                   <div className="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mb-4"></div>
                   <p className="text-gray-600">
-                    Analyzing your performance with AI...
+                    Analyzing your performance with AI & NLP...
                   </p>
                   <p className="text-sm text-gray-500 mt-2">
-                    This may take a few seconds
+                    Extracting key concepts, identifying patterns, and clustering topics...
                   </p>
                 </div>
               )}
@@ -262,6 +284,105 @@ function ResultPage() {
                     </div>
                   ) : (
                     <>
+                      {/* NEW: NLP Insights Card */}
+                      {aiAnalysis.nlp_metadata && (
+                        <div className="bg-gradient-to-r from-indigo-50 to-purple-50 border border-indigo-200 rounded-lg p-6">
+                          <h3 className="text-xl font-semibold text-indigo-900 mb-4 flex items-center gap-2">
+                            <span>🧠</span> NLP-Powered Insights
+                          </h3>
+                          
+                          <div className="grid md:grid-cols-2 gap-4 mb-4">
+                            {/* Top Concepts */}
+                            <div className="bg-white rounded-lg p-4">
+                              <p className="font-semibold text-gray-800 mb-2 text-sm">
+                                🔍 Key Concepts Detected:
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {aiAnalysis.nlp_metadata.top_concepts.slice(0, 6).map((concept, i) => (
+                                  <span
+                                    key={i}
+                                    className="bg-indigo-100 text-indigo-800 px-2 py-1 rounded text-xs font-medium"
+                                  >
+                                    {concept}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+
+                            {/* Dominant Error Pattern */}
+                            <div className="bg-white rounded-lg p-4">
+                              <p className="font-semibold text-gray-800 mb-2 text-sm">
+                                📊 Your Learning Pattern:
+                              </p>
+                              {(() => {
+                                const pattern = getErrorPatternBadge(
+                                  aiAnalysis.nlp_metadata.dominant_error_pattern
+                                );
+                                return (
+                                  <div className={`${pattern.color} rounded-lg px-3 py-2 text-sm font-medium inline-flex items-center gap-2`}>
+                                    <span>{pattern.icon}</span>
+                                    <span>{pattern.label}</span>
+                                  </div>
+                                );
+                              })()}
+                            </div>
+                          </div>
+
+                          {/* Error Pattern Distribution */}
+                          {aiAnalysis.nlp_metadata.error_patterns && (
+                            <div className="bg-white rounded-lg p-4">
+                              <p className="font-semibold text-gray-800 mb-3 text-sm">
+                                📈 Error Pattern Distribution:
+                              </p>
+                              <div className="space-y-2">
+                                {Object.entries(aiAnalysis.nlp_metadata.error_patterns).map(([pattern, count]) => {
+                                  const patternInfo = getErrorPatternBadge(pattern);
+                                  const percentage = (count / aiAnalysis.total_incorrect * 100).toFixed(0);
+                                  return (
+                                    <div key={pattern} className="flex items-center gap-3">
+                                      <span className="text-lg">{patternInfo.icon}</span>
+                                      <div className="flex-1">
+                                        <div className="flex justify-between text-sm mb-1">
+                                          <span className="text-gray-700">{patternInfo.label}</span>
+                                          <span className="font-semibold text-gray-600">
+                                            {count} ({percentage}%)
+                                          </span>
+                                        </div>
+                                        <div className="w-full bg-gray-200 rounded-full h-2">
+                                          <div
+                                            className="bg-indigo-600 h-2 rounded-full transition-all duration-500"
+                                            style={{ width: `${percentage}%` }}
+                                          ></div>
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Question Type Distribution */}
+                          {aiAnalysis.nlp_metadata.question_type_distribution && (
+                            <div className="bg-white rounded-lg p-4 mt-4">
+                              <p className="font-semibold text-gray-800 mb-2 text-sm">
+                                📝 Question Types You Struggled With:
+                              </p>
+                              <div className="flex flex-wrap gap-2">
+                                {Object.entries(aiAnalysis.nlp_metadata.question_type_distribution).map(([type, count]) => (
+                                  <span
+                                    key={type}
+                                    className="bg-purple-100 text-purple-800 px-3 py-1 rounded-full text-xs font-medium"
+                                  >
+                                    {type}: {count}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
+
                       {/* Overall Analysis */}
                       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6">
                         <h3 className="text-xl font-semibold text-blue-900 mb-3 flex items-center gap-2">
@@ -270,6 +391,19 @@ function ResultPage() {
                         <p className="text-gray-700 leading-relaxed mb-3">
                           {aiAnalysis.overall_analysis}
                         </p>
+                        
+                        {/* NEW: Learning Style Recommendation */}
+                        {aiAnalysis.learning_style_recommendation && (
+                          <div className="bg-blue-100 border border-blue-300 rounded-lg p-3 mb-3">
+                            <p className="font-semibold text-blue-900 mb-1 text-sm">
+                              💡 Recommended Learning Approach:
+                            </p>
+                            <p className="text-blue-800 text-sm">
+                              {aiAnalysis.learning_style_recommendation}
+                            </p>
+                          </div>
+                        )}
+
                         <div className="bg-white rounded-lg p-3 mt-3">
                           <p className="text-sm text-gray-600">
                             <span className="font-semibold">
@@ -285,6 +419,40 @@ function ResultPage() {
                           </p>
                         </div>
                       </div>
+
+                      {/* NEW: Conceptual Clusters */}
+                      {aiAnalysis.conceptual_clusters && aiAnalysis.conceptual_clusters.length > 0 && (
+                        <div className="bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-lg p-6">
+                          <h3 className="text-xl font-semibold text-teal-900 mb-4 flex items-center gap-2">
+                            <span>🔗</span> Connected Concepts
+                          </h3>
+                          <p className="text-sm text-teal-800 mb-4">
+                            These topics are related. Understanding one will help with the others:
+                          </p>
+                          <div className="space-y-3">
+                            {aiAnalysis.conceptual_clusters.map((cluster, idx) => (
+                              <div key={idx} className="bg-white rounded-lg p-4">
+                                <p className="font-semibold text-gray-800 mb-2">
+                                  {cluster.cluster_name}
+                                </p>
+                                <div className="flex flex-wrap gap-2 mb-2">
+                                  {cluster.concepts.map((concept, i) => (
+                                    <span
+                                      key={i}
+                                      className="bg-teal-100 text-teal-800 px-2 py-1 rounded text-sm"
+                                    >
+                                      {concept}
+                                    </span>
+                                  ))}
+                                </div>
+                                <p className="text-sm text-gray-600 italic">
+                                  {cluster.relationship}
+                                </p>
+                              </div>
+                            ))}
+                          </div>
+                        </div>
+                      )}
 
                       {/* Weak Topics Breakdown */}
                       {aiAnalysis.weak_topics && aiAnalysis.weak_topics.length > 0 && (
@@ -309,9 +477,20 @@ function ResultPage() {
                                       {topic.topic}
                                     </h4>
                                   </div>
-                                  <p className="text-sm uppercase font-semibold tracking-wide">
-                                    {topic.severity} Priority
-                                  </p>
+                                  <div className="flex items-center gap-2">
+                                    <p className="text-sm uppercase font-semibold tracking-wide">
+                                      {topic.severity} Priority
+                                    </p>
+                                    {/* NEW: Error Pattern Badge */}
+                                    {topic.error_pattern && (
+                                      <span className={`text-xs px-2 py-1 rounded ${
+                                        getErrorPatternBadge(topic.error_pattern).color
+                                      }`}>
+                                        {getErrorPatternBadge(topic.error_pattern).icon}{" "}
+                                        {getErrorPatternBadge(topic.error_pattern).label}
+                                      </span>
+                                    )}
+                                  </div>
                                 </div>
                                 <div className="text-right">
                                   <p className="text-sm text-gray-600">
@@ -338,6 +517,18 @@ function ResultPage() {
                                   </p>
                                   <p className="text-gray-700">
                                     {topic.common_misconception}
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* NEW: Conceptual Relationships */}
+                              {topic.conceptual_relationships && (
+                                <div className="bg-white rounded-lg p-4 mb-3">
+                                  <p className="font-semibold text-gray-800 mb-2">
+                                    🔗 Related to Other Topics:
+                                  </p>
+                                  <p className="text-gray-700 text-sm">
+                                    {topic.conceptual_relationships}
                                   </p>
                                 </div>
                               )}
