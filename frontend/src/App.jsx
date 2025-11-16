@@ -10,7 +10,11 @@ import CreateQuiz from "./pages/teacher/CreateQuiz";
 import AttemptQuiz from "./pages/student/AttemptQuiz";
 import Start from "./pages/student/Start";
 import ResultPage from "./pages/student/Result";
-import RecentQuizzes from "./components/RecentQuiz";
+import RecentQuizzes from "./pages/student/RecentQuiz";
+import RecentTeacherQuizzes from "./pages/teacher/RecentQuiz";
+import StudentsQuiz from "./pages/teacher/StudentsQuiz";
+import ResultTeacher from "./pages/teacher/Result";
+
 function Logout() {
   localStorage.clear();
   return <Navigate to="/login" />;
@@ -62,7 +66,7 @@ function App() {
           path="/attempt-quiz"
           element={
             <ProtectedRoute allowedRole="student">
-            <AttemptQuiz />
+              <AttemptQuiz />
             </ProtectedRoute>
           }
         />
@@ -70,7 +74,7 @@ function App() {
           path="/quiz/:id/start"
           element={
             <ProtectedRoute allowedRole="student">
-            <Start />
+              <Start />
             </ProtectedRoute>
           }
         />
@@ -91,6 +95,33 @@ function App() {
           }
         />
 
+        <Route
+          path="/recent-teacher-quizzes"
+          element={
+            <ProtectedRoute allowedRole="teacher">
+              <RecentTeacherQuizzes />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/teacher/quiz/:id/analysis"
+          element={
+            <ProtectedRoute allowedRole="teacher">
+              <StudentsQuiz/>
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/teacher/results/:id"
+          element={
+            <ProtectedRoute allowedRole="teacher">
+              <ResultTeacher />
+            </ProtectedRoute>
+          }
+        />
+          
         {/* Fallback */}
         <Route path="*" element={<NotFound />} />
       </Routes>
