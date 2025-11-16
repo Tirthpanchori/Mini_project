@@ -70,11 +70,15 @@ def analyze_weak_topics_with_ai(quiz_results: List[Dict[str, Any]]) -> Dict[str,
     # NLP Enhancement 2: Calculate semantic similarity between wrong and correct answers
     def calculate_answer_similarity(wrong: str, correct: str) -> str:
         """Determine if answers are conceptually similar or completely different"""
+        # Handle None or empty strings
+        if not wrong or not correct:
+            return "fundamental_gap"  # Changed from "unknown" to valid pattern
+        
         wrong_terms = set(extract_key_terms(wrong))
         correct_terms = set(extract_key_terms(correct))
         
         if not wrong_terms or not correct_terms:
-            return "unknown"
+            return "fundamental_gap"  # Changed from "unknown" to valid pattern
         
         overlap = len(wrong_terms & correct_terms) / len(correct_terms)
         
@@ -109,7 +113,8 @@ def analyze_weak_topics_with_ai(quiz_results: List[Dict[str, Any]]) -> Dict[str,
     error_patterns = {
         "partial_understanding": 0,
         "confused_concepts": 0,
-        "fundamental_gap": 0
+        "fundamental_gap": 0,
+        "unknown": 0  # FIX: Added to handle edge cases
     }
     question_type_errors = {}
     
@@ -125,7 +130,7 @@ def analyze_weak_topics_with_ai(quiz_results: List[Dict[str, Any]]) -> Dict[str,
         q_type = identify_question_type(question_text)
         
         # Track patterns
-        error_patterns[similarity_type] += 1
+        error_patterns[similarity_type] = error_patterns.get(similarity_type, 0) + 1
         question_type_errors[q_type] = question_type_errors.get(q_type, 0) + 1
         
         questions_summary.append({
@@ -306,9 +311,13 @@ Rules:
         # Add NLP metadata to response
         analysis["nlp_metadata"] = {
             "top_concepts": top_concepts,
-            "error_patterns": error_patterns,
+            "error_patterns": {k: v for k, v in error_patterns.items() if v > 0},  # Only include non-zero patterns
             "question_type_distribution": question_type_errors,
-            "dominant_error_pattern": max(error_patterns, key=error_patterns.get)
+            "dominant_error_pattern": max(
+                (k for k, v in error_patterns.items() if k != "unknown" and v > 0),
+                key=lambda k: error_patterns[k],
+                default="fundamental_gap"
+            )
         }
         
         logger.info(f"Successfully analyzed {len(incorrect_questions)} incorrect answers with NLP")
