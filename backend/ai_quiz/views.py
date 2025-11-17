@@ -35,6 +35,7 @@ class GenerateQuizAPIView(APIView):
 
     def post(self, request):
         topic = request.data.get("topic")  # optional
+        title = request.data.get("title")  # NEW
         pdf_file = request.FILES.get("pdf")  # NEW
         num_questions = int(request.data.get("num_questions", 5))
         difficulty = request.data.get("difficulty", "medium")
@@ -49,7 +50,7 @@ class GenerateQuizAPIView(APIView):
         combined_text = ""
 
         if topic:
-            combined_text += topic + "\n\n"
+            combined_text += (title + ": " + topic) + "\n\n"
 
         if pdf_text:
             combined_text += pdf_text
