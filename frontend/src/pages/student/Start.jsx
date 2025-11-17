@@ -126,23 +126,33 @@ function Start() {
     );
 
   return (
-    <div className="min-h-screen bg-[#f0f4ff] flex justify-center p-10">
-      <div className="w-full max-w-3xl bg-white rounded-2xl shadow p-8">
-        <h2 className="text-center text-2xl font-bold text-gray-800 mb-2">
-          {quiz.title}
-        </h2>
+    <div className="min-h-screen bg-[#f0f4ff] flex justify-center p-10 relative">
+      {/* 🔥 FIXED HEADER WITH QUIZ NAME + TIMER */}
+      <div className="fixed top-0 left-0 w-full backdrop-blur-sm bg-white/30 shadow-md py-4 z-50 transition-all duration-300">
 
-        {/* LIVE TIMER */}
-        <p className="text-center text-red-600 text-xl font-semibold mb-6">
-          ⏳ Time Left:{" "}
-          {timeLeft !== null
-            ? `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(
-                2,
-                "0"
-              )}`
-            : "Loading..."}
-        </p>
+        <div className="flex items-center justify-evenly w-full px-4 py-2">
+  <h2 className="text-2xl font-bold text-gray-800">
+    {quiz.title}
+  </h2>
 
+  <span
+    className="inline-block px-5 py-2 bg-red-100 text-red-700 rounded-full text-xl font-bold shadow 
+    border border-red-300"
+  >
+    ⏳ Time Left:{" "}
+    {timeLeft !== null
+      ? `${Math.floor(timeLeft / 60)}:${String(timeLeft % 60).padStart(
+          2,
+          "0"
+        )}`
+      : "Loading..."}
+  </span>
+</div>
+
+      </div>
+
+      {/* MAIN QUIZ CONTENT */}
+      <div className="w-full max-w-3xl bg-white rounded-2xl shadow p-8 mt-32">
         {quiz.questions.map((q, i) => (
           <div
             key={q.id}
