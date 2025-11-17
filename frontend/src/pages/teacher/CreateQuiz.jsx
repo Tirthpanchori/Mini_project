@@ -119,6 +119,7 @@ function CreateQuiz() {
 
     try {
       const formData = new FormData();
+      formData.append("title", title);
       formData.append("topic", aiPrompt || "");
       formData.append("num_questions", numQuestions);
       formData.append("difficulty", "medium");
