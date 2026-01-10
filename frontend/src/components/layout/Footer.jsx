@@ -1,0 +1,72 @@
+
+import React from 'react';
+import { BrainCircuit, Twitter, Github, Linkedin, Mail } from 'lucide-react';
+import { Link } from 'react-router-dom';
+
+export function Footer() {
+  const currentYear = new Date().getFullYear();
+
+  return (
+    <footer className="bg-slate-900 text-slate-300 pt-16 pb-8">
+      <div className="container mx-auto px-6">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+          {/* Brand */}
+          <div className="col-span-1 md:col-span-1">
+            <Link to="/" className="flex items-center gap-2 mb-6 text-white">
+              <div className="bg-primary-600 p-2 rounded-xl text-white">
+                <BrainCircuit size={24} />
+              </div>
+              <span className="text-xl font-bold">QuizGenAI</span>
+            </Link>
+            <p className="text-slate-400 leading-relaxed text-sm">
+              Empowering educators and students with AI-driven assessments. Create quizzes in seconds from any content.
+            </p>
+          </div>
+
+          {/* Links */}
+          <div>
+            <h4 className="text-white font-semibold mb-6">Product</h4>
+            <ul className="space-y-4 text-sm">
+              <li><a href="#" className="hover:text-white transition-colors">Features</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Pricing</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Testimonials</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Integration</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-white font-semibold mb-6">Resources</h4>
+            <ul className="space-y-4 text-sm">
+              <li><a href="#" className="hover:text-white transition-colors">Documentation</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">API Reference</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Blog</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Community</a></li>
+            </ul>
+          </div>
+
+          <div>
+            <h4 className="text-white font-semibold mb-6">Company</h4>
+            <ul className="space-y-4 text-sm">
+              <li><a href="#" className="hover:text-white transition-colors">About Us</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Careers</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Privacy Policy</a></li>
+              <li><a href="#" className="hover:text-white transition-colors">Terms of Service</a></li>
+            </ul>
+          </div>
+        </div>
+
+        <div className="border-t border-slate-800 pt-8 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-slate-500">
+            © {currentYear} QuizGenAI. All rights reserved.
+          </p>
+          <div className="flex items-center gap-6">
+            <a href="#" className="text-slate-400 hover:text-white transition-colors"><Twitter size={20} /></a>
+            <a href="#" className="text-slate-400 hover:text-white transition-colors"><Github size={20} /></a>
+            <a href="#" className="text-slate-400 hover:text-white transition-colors"><Linkedin size={20} /></a>
+            <a href="#" className="text-slate-400 hover:text-white transition-colors"><Mail size={20} /></a>
+          </div>
+        </div>
+      </div>
+    </footer>
+  );
+}
