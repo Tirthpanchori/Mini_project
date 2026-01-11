@@ -8,8 +8,8 @@ __pycache__/
 venv/
 
 # Django database
-backend/db.sqlite3
-db.sqlite3
+# backend/db.sqlite3
+# db.sqlite3
 
 # Migration caches
 **/migrations/__pycache__/
