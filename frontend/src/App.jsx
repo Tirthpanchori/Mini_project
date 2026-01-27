@@ -14,7 +14,6 @@ import RecentQuizzes from "./pages/student/RecentQuiz";
 import RecentTeacherQuizzes from "./pages/teacher/RecentQuiz";
 import StudentsQuiz from "./pages/teacher/StudentsQuiz";
 import ResultTeacher from "./pages/teacher/Result";
-import LandingPage from "./pages/LandingPage";
 
 function Logout() {
   localStorage.clear();
@@ -30,11 +29,13 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Public Routes */}
-        <Route path="/" element={<LandingPage />} />
+        {/* Redirect root */}
+        <Route path="/" element={<Navigate to="/login" />} />
+
+        {/* Auth routes */}
         <Route path="/login" element={<Login />} />
         <Route path="/logout" element={<Logout />} />
-        <Route path="/register" element={<RegisterAndLogout />} />
+        <Route path="/register" element={<Register />} />
 
         {/* Role-based protected routes */}
         <Route
