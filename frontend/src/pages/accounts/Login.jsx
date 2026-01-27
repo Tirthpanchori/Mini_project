@@ -1,20 +1,23 @@
-
 import React from 'react';
 import LoginForm from '../../components/LoginForm';
-import { Navbar } from '../../components/layout/Navbar';
 
 function Login() {
   return (
-    <div className="min-h-screen bg-slate-50 font-sans">
-      <Navbar />
-      <div className="flex items-center justify-center min-h-[calc(100vh-80px)] px-4 pt-20">
-        <div className="w-full max-w-md bg-white/80 backdrop-blur-xl border border-white/40 shadow-2xl rounded-2xl p-8 relative overflow-hidden">
-          {/* Decorative background blobs */}
-          <div className="absolute -top-10 -right-10 w-40 h-40 bg-primary-400/10 rounded-full blur-3xl pointer-events-none" />
-          <div className="absolute -bottom-10 -left-10 w-40 h-40 bg-blue-400/10 rounded-full blur-3xl pointer-events-none" />
-          
-          <LoginForm method="login" route="/accounts/token/" />
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-white to-blue-100 p-6">
+      <div className="w-full max-w-md bg-white border border-blue-200 shadow-xl rounded-2xl p-8 text-center 
+                      transition-transform duration-200 hover:-translate-y-1 hover:shadow-[0_12px_35px_rgba(59,130,246,0.25)]">
+        
+        <h1 className="text-3xl font-semibold text-blue-700 mb-2">Welcome Back</h1>
+        <p className="text-slate-600 mb-6">Please enter your credentials to log in.</p>
+
+        <LoginForm method="login" route="/accounts/token/" />
+
+        <p className="text-sm text-slate-600 mt-6">
+          Don&apos;t have an account?{" "}
+          <a href="/register" className="text-blue-600 font-medium hover:underline hover:text-blue-800">
+            Register here
+          </a>.
+        </p>
       </div>
     </div>
   );
