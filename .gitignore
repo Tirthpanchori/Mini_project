@@ -40,4 +40,4 @@ pnpm-debug.log*
 .idea/
 .DS_Store
 Thumbs.db
-b
+backend/.env
