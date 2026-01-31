@@ -1,5 +1,6 @@
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import LandingPage from "./pages/LandingPage";
 import HomeT from "./pages/teacher/Home";
 import HomeS from "./pages/student/Home";
 import Login from "./pages/accounts/Login";
@@ -29,8 +30,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        {/* Redirect root */}
-        <Route path="/" element={<Navigate to="/login" />} />
+        {/* Landing Page */}
+        <Route path="/" element={<LandingPage />} />
 
         {/* Auth routes */}
         <Route path="/login" element={<Login />} />

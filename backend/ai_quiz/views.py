@@ -2,7 +2,6 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .services import generate_quiz_with_ai, analyze_weak_topics_with_ai
-from PyPDF2 import PdfReader
 import pdfplumber
 
 class GenerateQuizAPIView(APIView):
@@ -63,8 +62,6 @@ class GenerateQuizAPIView(APIView):
         result = generate_quiz_with_ai(combined_text, num_questions, difficulty)
 
         return Response({"result": result})
-
-
 
 class AnalyzeWeakTopicsAPIView(APIView):
     """

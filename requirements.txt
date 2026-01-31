@@ -11,3 +11,4 @@ python-dotenv
 requests
 PyPDF2 
 pdfplumber
+ocrmypdf
