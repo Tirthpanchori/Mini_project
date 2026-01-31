@@ -34,26 +34,37 @@ export function Navbar() {
                 <BrainCircuit size={24} />
               </div>
               <span className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-slate-900 to-slate-700">
-                QuizGen<span className="text-primary-600">AI</span>
+                MindArc<span className="text-fuchsia-500">.</span>
               </span>
             </Link>
 
-            {/* CTA Buttons */}
-            <div className="hidden md:flex items-center gap-4">
-              <Link to="/login">
-                <Button variant="ghost" size="md">
-                  Log in
-                </Button>
-              </Link>
-              <Link to="/register">
-                <Button size="md" className="group">
-                  Get Started
-                  <ChevronRight
-                    size={16}
-                    className="ml-1 group-hover:translate-x-1 transition-transform"
-                  />
-                </Button>
-              </Link>
+            {/* Desktop Menu */}
+            <div className="hidden md:flex items-center space-x-3">
+              <button
+                onClick={() => navigate("/login")}
+                className="relative px-5 py-2 rounded-full text-sm font-medium text-slate-300 hover:text-white transition-colors overflow-hidden group"
+              >
+                <span className="relative z-10">Log In</span>
+                <motion.div
+                  className="absolute inset-0 bg-slate-800"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: 0 }}
+                  transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
+                />
+              </button>
+              <button
+                onClick={() => navigate("/register")}
+                className="relative px-5 py-2 rounded-full text-sm font-medium text-slate-900 overflow-hidden group"
+              >
+                <span className="relative z-10 font-bold group-hover:text-white transition-colors duration-300">Get Started</span>
+                <div className="absolute inset-0 bg-white" />
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-violet-600 to-fuchsia-500"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: 0 }}
+                  transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
+                />
+              </button>
             </div>
 
             {/* Mobile Menu Toggle */}

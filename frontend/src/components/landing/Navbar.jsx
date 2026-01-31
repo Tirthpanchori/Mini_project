@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Menu, X, BrainCircuit } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -10,11 +10,7 @@ const Navbar = () => {
 
   useEffect(() => {
     const handleScroll = () => {
-      if (window.scrollY > 20) {
-        setScrolled(true);
-      } else {
-        setScrolled(false);
-      }
+      setScrolled(window.scrollY > 20);
     };
 
     window.addEventListener("scroll", handleScroll);
@@ -24,142 +20,158 @@ const Navbar = () => {
   const scrollToSection = (id) => {
     const element = document.getElementById(id);
     if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
+      const offset = 80;
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+      
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: "smooth"
+      });
       setIsOpen(false);
     }
   };
 
   return (
-    <nav
-      className={`fixed w-full z-50 transition-all duration-300 ${
-        scrolled
-          ? "bg-white/80 backdrop-blur-md shadow-lg py-4"
-          : "bg-transparent py-6"
-      }`}
-    >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex justify-between items-center">
-          <div className="flex-shrink-0 flex items-center cursor-pointer" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}>
-            <BrainCircuit className={`h-8 w-8 ${scrolled ? "text-indigo-600" : "text-white"} mr-2`} />
-            <span className={`font-bold text-2xl tracking-tighter ${scrolled ? "text-slate-900" : "text-white"}`}>
-              MindArc
-            </span>
-          </div>
-
-          {/* Desktop Menu */}
-          <div className="hidden md:flex items-center space-x-8">
-            <button
+    <div className="fixed top-6 left-0 right-0 z-50 flex justify-center px-4">
+      <nav
+        className={`w-full max-w-5xl rounded-full transition-all duration-300 border ${
+          scrolled || isOpen
+            ? "bg-slate-900/80 backdrop-blur-xl border-slate-700/50 shadow-2xl shadow-black/20"
+            : "bg-transparent border-transparent"
+        }`}
+      >
+        <div className="px-6 py-3">
+          <div className="flex justify-between items-center">
+            {/* Logo */}
+            <div 
+              className="flex items-center cursor-pointer group" 
               onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-              className={`text-sm font-medium transition-colors hover:text-indigo-500 ${
-                scrolled ? "text-slate-700" : "text-white/90"
-              }`}
             >
-              Home
-            </button>
-            <button
-              onClick={() => scrollToSection("features")}
-              className={`text-sm font-medium transition-colors hover:text-indigo-500 ${
-                scrolled ? "text-slate-700" : "text-white/90"
-              }`}
-            >
-              Features
-            </button>
-            <button
-              onClick={() => scrollToSection("about")}
-              className={`text-sm font-medium transition-colors hover:text-indigo-500 ${
-                scrolled ? "text-slate-700" : "text-white/90"
-              }`}
-            >
-              About Us
-            </button>
-          </div>
+              <div className="bg-indigo-600 p-1.5 rounded-lg mr-2 group-hover:bg-indigo-500 transition-colors">
+                <BrainCircuit className="h-5 w-5 text-white" />
+              </div>
+              <span className="font-bold text-lg tracking-tight text-white">
+                MindArc
+              </span>
+            </div>
 
-          {/* Auth Buttons */}
-          <div className="hidden md:flex items-center space-x-4">
-            <button
-              onClick={() => navigate("/login")}
-              className={`px-5 py-2 rounded-full text-sm font-medium transition-all ${
-                scrolled
-                  ? "text-indigo-600 hover:bg-indigo-50"
-                  : "text-white hover:bg-white/10"
-              }`}
-            >
-              Log In
-            </button>
-            <button
-              onClick={() => navigate("/register")}
-              className={`px-5 py-2 rounded-full text-sm font-medium shadow-lg transition-all transform hover:scale-105 ${
-                scrolled
-                  ? "bg-indigo-600 text-white hover:bg-indigo-700 hover:shadow-indigo-500/30"
-                  : "bg-white text-indigo-900 hover:bg-gray-100"
-              }`}
-            >
-              Sign Up
-            </button>
-          </div>
+            {/* Desktop Menu */}
+            <div className="hidden md:flex items-center space-x-1 bg-slate-800/50 rounded-full p-1 border border-slate-700/50">
+              {[
+                { label: "Home", action: () => window.scrollTo({ top: 0, behavior: 'smooth' }) },
+                { label: "Features", action: () => scrollToSection("features") },
+                { label: "About", action: () => scrollToSection("about") },
+              ].map((item) => (
+                <button
+                  key={item.label}
+                  onClick={item.action}
+                  className="relative px-5 py-2 text-sm font-medium rounded-full text-slate-300 hover:text-white transition-colors group overflow-hidden"
+                >
+                  <span className="relative z-10">{item.label}</span>
+                  <motion.div
+                    className="absolute inset-0 bg-slate-700"
+                    initial={{ x: "-100%" }}
+                    whileHover={{ x: 0 }}
+                    transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
+                  />
+                </button>
+              ))}
+            </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center">
-            <button
-              onClick={() => setIsOpen(!isOpen)}
-              className={`${scrolled ? "text-slate-900" : "text-white"} focus:outline-none`}
-            >
-              {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-            </button>
+            {/* Auth Buttons */}
+            <div className="hidden md:flex items-center space-x-3">
+              <button
+                onClick={() => navigate("/login")}
+                className="relative px-5 py-2 rounded-full text-sm font-medium text-slate-300 hover:text-white transition-colors overflow-hidden group"
+              >
+                <span className="relative z-10">Log In</span>
+                <motion.div
+                  className="absolute inset-0 bg-slate-800"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: 0 }}
+                  transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
+                />
+              </button>
+              <button
+                onClick={() => navigate("/register")}
+                className="relative px-5 py-2 rounded-full text-sm font-medium text-slate-900 overflow-hidden group"
+              >
+                <span className="relative z-10 font-bold group-hover:text-white transition-colors duration-300">Get Started</span>
+                <div className="absolute inset-0 bg-white" />
+                <motion.div
+                  className="absolute inset-0 bg-gradient-to-r from-indigo-500 to-purple-500"
+                  initial={{ x: "-100%" }}
+                  whileHover={{ x: 0 }}
+                  transition={{ type: "tween", ease: "easeInOut", duration: 0.3 }}
+                />
+              </button>
+            </div>
+
+            {/* Mobile Menu Button */}
+            <div className="md:hidden flex items-center">
+              <button
+                onClick={() => setIsOpen(!isOpen)}
+                className="text-white p-1"
+              >
+                {isOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+              </button>
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Mobile Menu */}
-      <AnimatePresence>
-        {isOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white border-t border-gray-100 shadow-xl overflow-hidden"
-          >
-            <div className="px-4 pt-2 pb-6 space-y-1">
-              <button
-                onClick={() => {
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                  setIsOpen(false);
-                }}
-                className="block w-full text-left px-3 py-3 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-md"
-              >
-                Home
-              </button>
-              <button
-                onClick={() => scrollToSection("features")}
-                className="block w-full text-left px-3 py-3 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-md"
-              >
-                Features
-              </button>
-              <button
-                onClick={() => scrollToSection("about")}
-                className="block w-full text-left px-3 py-3 text-base font-medium text-slate-700 hover:text-indigo-600 hover:bg-indigo-50 rounded-md"
-              >
-                About Us
-              </button>
-              <div className="pt-4 flex flex-col space-y-3 px-3">
+        {/* Mobile Menu */}
+        <AnimatePresence>
+          {isOpen && (
+            <motion.div
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: "auto" }}
+              exit={{ opacity: 0, height: 0 }}
+              className="md:hidden overflow-hidden border-t border-slate-800"
+            >
+              <div className="px-6 py-4 space-y-3">
                 <button
-                  onClick={() => navigate("/login")}
-                  className="w-full px-5 py-3 text-center rounded-lg text-base font-medium text-indigo-600 bg-indigo-50 hover:bg-indigo-100"
+                  onClick={() => {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                    setIsOpen(false);
+                  }}
+                  className="block w-full text-left py-2 text-base font-medium text-slate-300 hover:text-white"
                 >
-                  Log In
+                  Home
                 </button>
                 <button
-                  onClick={() => navigate("/register")}
-                  className="w-full px-5 py-3 text-center rounded-lg text-base font-medium text-white bg-indigo-600 hover:bg-indigo-700 shadow-md"
+                  onClick={() => scrollToSection("features")}
+                  className="block w-full text-left py-2 text-base font-medium text-slate-300 hover:text-white"
                 >
-                  Sign Up
+                  Features
                 </button>
+                <button
+                  onClick={() => scrollToSection("about")}
+                  className="block w-full text-left py-2 text-base font-medium text-slate-300 hover:text-white"
+                >
+                  About Us
+                </button>
+                
+                <div className="pt-4 grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => navigate("/login")}
+                    className="w-full px-4 py-2 text-center rounded-lg text-sm font-medium text-slate-300 bg-slate-800 hover:bg-slate-700 transition-colors"
+                  >
+                    Log In
+                  </button>
+                  <button
+                    onClick={() => navigate("/register")}
+                    className="w-full px-4 py-2 text-center rounded-lg text-sm font-medium text-slate-900 bg-white hover:bg-gray-100 transition-all"
+                  >
+                    Sign Up
+                  </button>
+                </div>
               </div>
-            </div>
-          </motion.div>
-        )}
-      </AnimatePresence>
-    </nav>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </nav>
+    </div>
   );
 };
 
