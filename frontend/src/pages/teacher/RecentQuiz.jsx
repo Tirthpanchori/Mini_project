@@ -1,9 +1,25 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
+import { 
+  Search, 
+  Filter, 
+  BarChart2, 
+  Copy, 
+  Clock, 
+  Map, 
+  Users, 
+  ArrowRight,
+  Layout,
+  BookOpen,
+  ArrowLeft
+} from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import api from "../../services/api";
 
 function RecentTeacherQuizzes() {
   const [quizzes, setQuizzes] = useState([]);
+  const [search, setSearch] = useState("");
+  const [sortUser, setSortUser] = useState("newest"); // "newest", "oldest", "attempts"
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -18,57 +34,184 @@ function RecentTeacherQuizzes() {
     fetchQuizzes();
   }, []);
 
+  const copyToClipboard = (code) => {
+    navigator.clipboard.writeText(code);
+    // Optional: Add toast notification Logic here
+  };
+
+  // Filter & Sort Logic
+  const filteredQuizzes = useMemo(() => {
+    let filtered = quizzes.filter(q => 
+      q.title.toLowerCase().includes(search.toLowerCase()) || 
+      q.code.toLowerCase().includes(search.toLowerCase())
+    );
+
+    if (sortUser === "newest") {
+      filtered.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+    } else if (sortUser === "oldest") {
+      filtered.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+    } else if (sortUser === "attempts") {
+      filtered.sort((a, b) => b.attempts_count - a.attempts_count);
+    }
+    
+    return filtered;
+  }, [quizzes, search, sortUser]);
+
+  // Summary Stats
+  const totalAttempts = useMemo(() => quizzes.reduce((acc, curr) => acc + curr.attempts_count, 0), [quizzes]);
+  const activeQuizzesCount = useMemo(() => quizzes.filter(q => q.attempts_count > 0).length, [quizzes]);
+
   return (
-    <div className="min-h-screen bg-[#F8FAFF] px-6 py-10">
-      <div className="max-w-6xl mx-auto">
-        <h1 className="text-3xl font-bold text-blue-700 mb-2">📘 My Quizzes</h1>
-        <p className="text-gray-600 mb-8">
-          Here are all quizzes you’ve created and their total attempt counts.
-        </p>
+    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-violet-500/30 p-6 md:p-8 lg:p-12">
+      <div className="max-w-7xl mx-auto space-y-8">
+        
+        {/* Header */}
+        <button 
+          onClick={() => navigate('/teacher')}
+          className="text-slate-500 hover:text-white text-sm font-medium flex items-center gap-2 transition-colors mb-2"
+        >
+          <ArrowLeft size={16} /> Back to Dashboard
+        </button>
 
-        {quizzes.length === 0 ? (
-          <p className="text-gray-500 text-center mt-10">No quizzes created yet.</p>
-        ) : (
-          <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
-            {quizzes.map((quiz) => (
-              <div
-                key={quiz.id}
-                className="bg-white shadow-md rounded-2xl p-5 border border-blue-100 hover:shadow-lg hover:scale-[1.02] transition-all cursor-pointer"
-                onClick={() => {
-                  // 🧭 pseudo-navigation — will be replaced with real route later
-                  navigate(`/teacher/quiz/${quiz.id}/analysis`);
-                }}
-              >
-                <h2 className="text-lg font-semibold text-blue-700 mb-2">
-                  🧠 {quiz.title}
-                </h2>
-                <div className="text-gray-600 text-sm space-y-1">
-                  <p>
-                    📅 Created at:{" "}
-                    {new Date(quiz.created_at).toLocaleString()}
-                  </p>
-                  <p>❓ Total Questions: {quiz.total_questions}</p>
-                  <p>👥 Attempts: {quiz.attempts_count}</p>
-                  <p>
-                    🔢 Code:{" "}
-                    <span className="font-mono text-gray-800">{quiz.code}</span>
-                  </p>
-                </div>
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
+           <div>
+             <h1 className="text-3xl md:text-4xl font-bold text-white mb-2 flex items-center gap-3">
+               <BookOpen className="text-violet-500" size={32} />
+               My <span className="text-transparent bg-clip-text bg-gradient-to-r from-violet-400 to-fuchsia-400">Library</span>
+             </h1>
+             <p className="text-slate-400">Manage your quizzes, track attempts, and analyze performance.</p>
+           </div>
+           
+           <button 
+             onClick={() => navigate('/create-quiz')}
+             className="px-5 py-2.5 rounded-xl bg-white text-slate-950 font-bold hover:bg-slate-200 transition-colors shadow-lg shadow-white/5 flex items-center gap-2"
+           >
+             + New Quiz
+           </button>
+        </div>
 
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    // 🧭 pseudo-navigation for future teacher analytics page
-                    navigate(`/teacher/quiz/${quiz.id}/analysis`);
-                  }}
-                  className="mt-4 w-full bg-blue-600 text-white py-2 rounded-xl hover:bg-blue-700 transition-all"
-                >
-                  View Analysis →
-                </button>
+        {/* Summary Row */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+           <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl flex items-center justify-between">
+              <div>
+                <p className="text-slate-500 text-sm font-medium">Total Quizzes</p>
+                <p className="text-2xl font-bold text-white">{quizzes.length}</p>
               </div>
-            ))}
-          </div>
-        )}
+              <div className="p-3 bg-violet-500/10 rounded-lg">
+                <Layout className="text-violet-400 w-5 h-5" />
+              </div>
+           </div>
+           <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl flex items-center justify-between">
+              <div>
+                <p className="text-slate-500 text-sm font-medium">Total Attempts</p>
+                <p className="text-2xl font-bold text-white">{totalAttempts}</p>
+              </div>
+              <div className="p-3 bg-fuchsia-500/10 rounded-lg">
+                <Users className="text-fuchsia-400 w-5 h-5" />
+              </div>
+           </div>
+           <div className="bg-slate-900/50 border border-slate-800 p-4 rounded-xl flex items-center justify-between">
+              <div>
+                <p className="text-slate-500 text-sm font-medium">Active (Attempts &gt; 0)</p>
+                <p className="text-2xl font-bold text-white">{activeQuizzesCount}</p>
+              </div>
+              <div className="p-3 bg-cyan-500/10 rounded-lg">
+                <BarChart2 className="text-cyan-400 w-5 h-5" />
+              </div>
+           </div>
+        </div>
+
+        {/* Toolbar */}
+        <div className="flex flex-col md:flex-row gap-4 bg-slate-900/40 p-2 rounded-2xl border border-slate-800/50 backdrop-blur-sm">
+           <div className="relative flex-1">
+             <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-5 h-5" />
+             <input 
+               type="text" 
+               placeholder="Search by title or code..." 
+               value={search}
+               onChange={(e) => setSearch(e.target.value)}
+               className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-slate-200 outline-none focus:border-violet-500/50 focus:ring-1 focus:ring-violet-500/50 transition-all placeholder:text-slate-600"
+             />
+           </div>
+           
+           <div className="relative min-w-[200px]">
+             <Filter className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 w-4 h-4" />
+             <select 
+               value={sortUser}
+               onChange={(e) => setSortUser(e.target.value)}
+               className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-slate-200 outline-none focus:border-violet-500/50 appearance-none cursor-pointer"
+             >
+               <option value="newest">Newest First</option>
+               <option value="oldest">Oldest First</option>
+               <option value="attempts">Most Attempts</option>
+             </select>
+           </div>
+        </div>
+
+        {/* Quiz Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+           <AnimatePresence>
+             {filteredQuizzes.length > 0 ? (
+               filteredQuizzes.map((quiz, i) => (
+                 <motion.div
+                   key={quiz.id}
+                   initial={{ opacity: 0, scale: 0.95 }}
+                   animate={{ opacity: 1, scale: 1 }}
+                   exit={{ opacity: 0, scale: 0.9 }}
+                   transition={{ delay: i * 0.05 }}
+                   className="group bg-slate-900 border border-slate-800 hover:border-violet-500/30 rounded-2xl p-6 relative overflow-hidden transition-all hover:shadow-xl hover:shadow-violet-500/10"
+                 >
+                    {/* Hover Gradient Overlay */}
+                    <div className="absolute inset-0 bg-gradient-to-br from-violet-500/5 to-fuchsia-500/5 opacity-0 group-hover:opacity-100 transition-opacity" />
+
+                    <div className="relative z-10">
+                       <div className="flex justify-between items-start mb-4">
+                          <span className={`px-2.5 py-1 rounded-lg text-xs font-semibold ${
+                             quiz.attempts_count > 0 
+                             ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20" 
+                             : "bg-slate-800 text-slate-500 border border-slate-700"
+                          }`}>
+                            {quiz.attempts_count > 0 ? `${quiz.attempts_count} Attempts` : "No Attempts"}
+                          </span>
+                          
+                          <button 
+                             onClick={() => copyToClipboard(quiz.code)}
+                             className="flex items-center gap-1.5 px-2 py-1 bg-slate-950 border border-slate-800 hover:border-slate-600 rounded-lg text-xs font-mono text-slate-400 hover:text-white transition-colors"
+                          >
+                             {quiz.code} <Copy size={10} />
+                          </button>
+                       </div>
+
+                       <h3 className="text-lg font-bold text-white mb-2 line-clamp-1 group-hover:text-violet-400 transition-colors">
+                         {quiz.title}
+                       </h3>
+
+                       <div className="flex items-center gap-4 text-sm text-slate-500 mb-6">
+                          <span className="flex items-center gap-1"><Clock size={14} /> {new Date(quiz.created_at).toLocaleDateString()}</span>
+                          <span className="flex items-center gap-1"><Layout size={14} /> {quiz.total_questions} Qs</span>
+                       </div>
+
+                       <button 
+                         onClick={() => navigate(`/teacher/quiz/${quiz.id}/analysis`)}
+                         className="w-full py-2.5 rounded-xl bg-violet-600/10 border border-violet-600/20 text-violet-400 font-medium hover:bg-violet-600 hover:text-white transition-all flex items-center justify-center gap-2 group/btn"
+                       >
+                         View Analysis 
+                         <ArrowRight size={16} className="group-hover/btn:translate-x-1 transition-transform" />
+                       </button>
+                    </div>
+                 </motion.div>
+               ))
+             ) : (
+                <div className="col-span-full py-20 text-center">
+                   <div className="w-16 h-16 bg-slate-900 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-800">
+                      <Search className="text-slate-600 w-8 h-8" />
+                   </div>
+                   <h3 className="text-lg font-medium text-white">No quizzes found</h3>
+                   <p className="text-slate-500">Try adjusting your search or filters.</p>
+                </div>
+             )}
+           </AnimatePresence>
+        </div>
       </div>
     </div>
   );

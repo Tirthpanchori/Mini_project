@@ -5,6 +5,9 @@ from .models import Quiz, Question
 from .serializers import QuizSerializer, QuestionSerializer
 from attempts.models import Attempt, SavedAnswer
 from django.shortcuts import get_object_or_404
+from django.utils.timezone import now
+from datetime import timedelta
+from django.db.models import Avg, Count
 
 
 class QuizCreateView(APIView):
@@ -167,4 +170,58 @@ class GetAttemptResultForTeacherView(APIView):
             "total_questions": total_questions,
             "attempted_at": attempt.attempted_at.isoformat(),
             "results": results,
+        }, status=status.HTTP_200_OK)
+
+
+class TeacherDashboardView(APIView):
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request):
+        user = request.user
+
+        if user.role != "teacher":
+            return Response({"detail": "Only teachers can access this dashboard."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+        # ✅ Total quizzes by teacher
+        total_quizzes = Quiz.objects.filter(teacher=user).count()
+
+        # ✅ "Active quizzes" (fallback logic: created in last 7 days)
+        seven_days_ago = now() - timedelta(days=7)
+        active_quizzes = Quiz.objects.filter(teacher=user, created_at__gte=seven_days_ago).count()
+
+        # ✅ Total attempts on teacher quizzes
+        attempts_qs = Attempt.objects.filter(quiz__teacher=user)
+        total_attempts = attempts_qs.count()
+
+        # ✅ Average score across all attempts (if none, return 0)
+        avg_score = attempts_qs.aggregate(avg=Avg("score"))["avg"] or 0
+
+        # ✅ Recent quizzes (last 5) with attempts count
+        recent_quizzes_qs = (
+            Quiz.objects.filter(teacher=user)
+            .annotate(attempt_count=Count("attempts"))
+            .order_by("-created_at")[:5]
+        )
+
+        recent_quizzes = []
+        for quiz in recent_quizzes_qs:
+            recent_quizzes.append({
+                "id": quiz.id,
+                "title": quiz.title,
+                "code": quiz.code,
+                "timer": quiz.timer,
+                "total_questions": quiz.total_questions,
+                "created_at": quiz.created_at.isoformat(),
+                "attempts_count": quiz.attempt_count,
+            })
+
+        return Response({
+            "stats": {
+                "totalQuizzes": total_quizzes,
+                "activeQuizzes": active_quizzes,
+                "totalAttempts": total_attempts,
+                "avgScore": round(avg_score, 2),
+            },
+            "recentQuizzes": recent_quizzes,
         }, status=status.HTTP_200_OK)
