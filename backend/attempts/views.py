@@ -21,7 +21,7 @@ class VerifyQuizCodeView(APIView):
         except Quiz.DoesNotExist:
             return Response({"detail": "Invalid quiz code."}, status=status.HTTP_404_NOT_FOUND)
 
-        # ✅ Fixed line
+        
         if Attempt.objects.filter(student=user, quiz=quiz).exists():
             return Response({"detail": "You have already attempted this quiz."}, status=status.HTTP_400_BAD_REQUEST)
 

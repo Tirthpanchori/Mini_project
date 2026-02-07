@@ -23,7 +23,7 @@ import { motion, AnimatePresence } from "framer-motion";
 function CreateQuiz() {
   const [title, setTitle] = useState("");
   const [timer, setTimer] = useState(600);
-  const [numQuestions, setNumQuestions] = useState(1);
+  const [numQuestions, setNumQuestions] = useState(10);
   const [questions, setQuestions] = useState([]);
   const [quizId, setQuizId] = useState(null);
   const [quizCode, setQuizCode] = useState("");
@@ -34,35 +34,24 @@ function CreateQuiz() {
   const [showAIModal, setShowAIModal] = useState(false);
   const [aiPrompt, setAiPrompt] = useState("");
   const [pdfFile, setPdfFile] = useState(null);
+  const [youtubeUrl, setYoutubeUrl] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [expandedQuestion, setExpandedQuestion] = useState(0);
 
   // ---------------- CREATE QUIZ (STEP 1) ----------------
-  const handleCreateQuiz = async (e) => {
+  const handleCreateQuiz = (e) => {
     if (e) e.preventDefault();
     setMessage("");
 
-    try {
-      const res = await api.post("/quiz/create/", {
-        title,
-        timer,
-        total_questions: numQuestions,
-      });
+    // Defer API call - just update local state
+    setStep(2);
 
-      setQuizId(res.data.quiz_id);
-      setQuizCode(res.data.code);
-      setMessage("✅ Quiz created! Now add questions below.");
-      setStep(2);
-
-      const qArray = Array.from({ length: numQuestions }, () => ({
-        text: "",
-        options: ["", "", "", ""],
-        correct: 0,
-      }));
-      setQuestions(qArray);
-    } catch (err) {
-      setMessage("❌ Failed to create quiz: " + (err.response?.data?.detail || "Unknown error"));
-    }
+    const qArray = Array.from({ length: numQuestions }, () => ({
+      text: "",
+      options: ["", "", "", ""],
+      correct: 0,
+    }));
+    setQuestions(qArray);
   };
 
   // ---------------- QUESTION LOGIC ----------------
@@ -97,26 +86,42 @@ function CreateQuiz() {
   // ---------------- ADD QUESTIONS (STEP 2) ----------------
   const handleAddQuestions = async () => {
     setMessage("");
-    if (!quizId) {
-      setMessage("❌ Quiz ID not found. Please create the quiz first.");
-      return;
-    }
 
-    const formattedQuestions = questions.map((q) => ({
-      text: q.text,
-      options: q.options,
-      correct: q.correct,
-    }));
+    let currentQuizId = quizId;
+    let currentQuizCode = quizCode;
 
     try {
-      await api.post(`/quiz/${quizId}/add-questions/`, {
-        questions: formattedQuestions,
-      });
+        // 1. Create quiz if it doesn't exist yet
+        if (!currentQuizId) {
+            const createRes = await api.post("/quiz/create/", {
+                title,
+                timer,
+                total_questions: questions.length, // Use actual length of questions array
+            });
 
-      setMessage("✅ Questions added successfully!");
-      setStep(3);
+            currentQuizId = createRes.data.quiz_id;
+            currentQuizCode = createRes.data.code;
+
+            setQuizId(currentQuizId);
+            setQuizCode(currentQuizCode);
+        }
+
+        // 2. Then, add the questions to the quiz
+        const formattedQuestions = questions.map((q) => ({
+            text: q.text,
+            options: q.options,
+            correct: q.correct,
+        }));
+
+        await api.post(`/quiz/${currentQuizId}/add-questions/`, {
+            questions: formattedQuestions,
+        });
+
+        setMessage("✅ Quiz created successfully!");
+        setStep(3);
     } catch (err) {
-      setMessage("❌ Failed to add questions: " + (err.response?.data?.detail || "Unknown error"));
+        console.error(err);
+        setMessage("❌ Failed to save quiz: " + (err.response?.data?.detail || "Unknown error"));
     }
   };
 
@@ -128,25 +133,53 @@ function CreateQuiz() {
 
   // ---------------- AI QUIZ GENERATION ----------------
   const handleAIPromptSubmit = async () => {
-    if (!aiPrompt.trim() && !pdfFile) {
-      alert("⚠️ Please enter a prompt or upload a PDF!");
+    if (!aiPrompt.trim() && !pdfFile && !youtubeUrl.trim()) {
+      alert("⚠️ Please provide a Prompt, PDF, or YouTube URL!");
       return;
     }
 
     setShowAIModal(false);
     setIsLoading(true);
-    setMessage("🤖 Generating quiz using AI... Please wait.");
 
     try {
+      let finalTopic = aiPrompt || "";
+
+      // 1. If YouTube URL is present, extract text first
+      if (youtubeUrl.trim()) {
+        setMessage("⏳ Extracting text from YouTube...");
+        
+        try {
+          const ytRes = await api.post("/ai/get-text-outofurl/", { 
+            url: youtubeUrl 
+          });
+          
+          if (ytRes.data.text) {
+             // Append transcript to the topic
+             finalTopic += "\n\nYouTube Video Transcript:\n" + ytRes.data.text;
+          }
+        } catch (ytErr) {
+           console.error("YouTube extraction failed", ytErr);
+           // We continue anyway? Or fail? The user expects the video to be used.
+           // Better to fail and let them know.
+           throw new Error("Failed to extract text from YouTube video. Please check the URL.");
+        }
+      }
+
+      setMessage("🤖 Generating quiz using AI... Please wait.");
+
       const formData = new FormData();
       formData.append("title", title);
-      formData.append("topic", aiPrompt || "");
+      formData.append("topic", finalTopic);
       formData.append("num_questions", numQuestions);
       formData.append("difficulty", "medium");
 
       if (pdfFile) {
         formData.append("pdf", pdfFile);
       }
+      
+      // We don't need to send youtube_url to generate-quiz anymore since we sent the text
+      // but if the backend logs it or something, we can send it. 
+      // Based on view checks, it ignores it, so omitting it is fine.
 
       const aiRes = await api.post("/ai/generate-quiz/", formData, {
         headers: {
@@ -156,17 +189,7 @@ function CreateQuiz() {
 
       const aiData = aiRes.data.result?.questions || [];
 
-      const res = await api.post("/quiz/create/", {
-        title,
-        timer,
-        total_questions: aiData.length,
-      });
-
-      setQuizId(res.data.quiz_id);
-      setQuizCode(res.data.code);
-      setMessage("✅ AI Quiz created! You can edit questions below.");
-      setStep(2);
-
+      // Only update local state with AI results, do NOT create quiz yet
       const formatted = aiData.map((q) => ({
         text: q.question,
         options: q.options,
@@ -174,13 +197,20 @@ function CreateQuiz() {
       }));
 
       setQuestions(formatted);
+      // Update numQuestions to match what AI returned, so the UI is consistent
+      setNumQuestions(formatted.length); 
       checkCompletion(formatted);
+      
+      setMessage("✅ AI Quiz generated! Review questions below.");
+      setStep(2);
+
     } catch (err) {
       console.error(err);
-      setMessage("❌ Failed to generate quiz using AI: " + (err.response?.data?.detail || "Unknown error"));
+      setMessage("❌ Error: " + (err.message || err.response?.data?.detail || "Unknown error"));
     } finally {
       setIsLoading(false);
       setPdfFile(null);
+      setYoutubeUrl("");
     }
   };
 
@@ -205,8 +235,8 @@ function CreateQuiz() {
             <div key={s.id} className="relative z-10 flex flex-col items-center gap-2">
               <div
                 className={`w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm transition-all duration-300 ${step >= s.id
-                    ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 ring-4 ring-indigo-500/20"
-                    : "bg-slate-800 text-slate-500 border-2 border-slate-700"
+                  ? "bg-indigo-600 text-white shadow-lg shadow-indigo-500/30 ring-4 ring-indigo-500/20"
+                  : "bg-slate-800 text-slate-500 border-2 border-slate-700"
                   }`}
               >
                 {step > s.id ? <CheckCircle2 size={18} /> : s.id}
@@ -292,7 +322,7 @@ function CreateQuiz() {
                         min="1"
                         max="100"
                         value={numQuestions}
-                        onChange={(e) => setNumQuestions(parseInt(e.target.value) || 1)}
+                        onChange={(e) => setNumQuestions(parseInt(e.target.value))}
                         className="w-full text-center h-full bg-transparent outline-none font-medium appearance-none m-0 text-slate-200"
                         style={{ MozAppearance: 'textfield' }}
                       />
@@ -444,8 +474,8 @@ function CreateQuiz() {
                                 <div
                                   key={oi}
                                   className={`relative group rounded-xl border transition-all ${q.correct === oi
-                                      ? "border-emerald-500/50 bg-emerald-500/10"
-                                      : "border-slate-800 bg-slate-950 hover:border-slate-700"
+                                    ? "border-emerald-500/50 bg-emerald-500/10"
+                                    : "border-slate-800 bg-slate-950 hover:border-slate-700"
                                     }`}
                                 >
                                   <div className="absolute left-3 top-1/2 -translate-y-1/2 flex items-center">
@@ -570,37 +600,100 @@ function CreateQuiz() {
                 <h2 className="text-2xl font-bold text-white mb-2">Generate with AI ✨</h2>
                 <p className="text-slate-400 mb-6">Describe your quiz topic and let our AI build it for you.</p>
 
-                <div className="mb-6">
-                  <label className="block text-sm font-semibold text-slate-400 mb-2">Prompt / Topic</label>
-                  <textarea
-                    rows="4"
-                    placeholder="e.g. Create a hard quiz about Organic Chemistry covering Alkanes and Alkenes..."
-                    value={aiPrompt}
-                    onChange={(e) => setAiPrompt(e.target.value)}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all resize-none text-slate-200 placeholder:text-slate-600"
-                  />
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {["Python OOP", "World History", "Calculus Limits", "Biology"].map(tag => (
-                      <button
-                        key={tag}
-                        onClick={() => setAiPrompt(tag)}
-                        className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-400 px-3 py-1.5 rounded-full font-medium transition-colors border border-slate-700"
-                      >
-                        + {tag}
-                      </button>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="mb-8">
-                  <label className="block text-sm font-semibold text-slate-400 mb-2">Upload Reference PDF (Optional)</label>
-                  <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-800 rounded-xl cursor-pointer hover:bg-slate-950 hover:border-indigo-500/50 transition-colors group">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <Upload className="w-8 h-8 text-slate-600 group-hover:text-indigo-400 mb-2 transition-colors" />
-                      <p className="text-sm text-slate-500">{pdfFile ? pdfFile.name : "Click to upload PDF"}</p>
+                <div className="space-y-6 mb-8">
+                  {/* OPTION 1: PROMPT + PDF */}
+                  <div
+                    className={`transition-all duration-300 ${youtubeUrl.trim() ? "opacity-40 grayscale pointer-events-none" : "opacity-100"}`}
+                  >
+                    <div className="mb-4">
+                      <label className="block text-sm font-semibold text-slate-400 mb-2">Prompt / Topic</label>
+                      <textarea
+                        rows="4"
+                        placeholder="e.g. Create a hard quiz about Organic Chemistry covering Alkanes and Alkenes..."
+                        value={aiPrompt}
+                        onChange={(e) => setAiPrompt(e.target.value)}
+                        disabled={!!youtubeUrl.trim()}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all resize-none text-slate-200 placeholder:text-slate-600 disabled:cursor-not-allowed"
+                      />
+                      <div className="flex flex-wrap gap-2 mt-3">
+                        {["Python OOP", "World History", "Calculus Limits", "Biology"].map(tag => (
+                          <button
+                            key={tag}
+                            onClick={() => !youtubeUrl.trim() && setAiPrompt(tag)}
+                            disabled={!!youtubeUrl.trim()}
+                            className="text-xs bg-slate-800 hover:bg-slate-700 text-slate-400 px-3 py-1.5 rounded-full font-medium transition-colors border border-slate-700 disabled:cursor-not-allowed disabled:hover:bg-slate-800"
+                          >
+                            + {tag}
+                          </button>
+                        ))}
+                      </div>
                     </div>
-                    <input type="file" className="hidden" accept="application/pdf" onChange={(e) => setPdfFile(e.target.files[0])} />
-                  </label>
+
+                    <div>
+                      <label className="block text-sm font-semibold text-slate-400 mb-2">Upload Reference PDF (Optional)</label>
+                      <label className={`flex flex-col items-center justify-center w-full h-32 border-2 border-dashed border-slate-800 rounded-xl transition-colors group ${youtubeUrl.trim() ? "cursor-not-allowed" : "cursor-pointer hover:bg-slate-950 hover:border-indigo-500/50"}`}>
+                        <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                          <Upload className="w-8 h-8 text-slate-600 group-hover:text-indigo-400 mb-2 transition-colors" />
+                          <p className="text-sm text-slate-500">{pdfFile ? pdfFile.name : "Click to upload PDF"}</p>
+                        </div>
+                        <input
+                          type="file"
+                          className="hidden"
+                          accept="application/pdf"
+                          onChange={(e) => setPdfFile(e.target.files[0])}
+                          disabled={!!youtubeUrl.trim()}
+                        />
+                      </label>
+                    </div>
+                  </div>
+
+                  {/* DIVIDER */}
+                  <div className="relative flex items-center py-2">
+                    <div className="flex-grow border-t border-slate-800"></div>
+                    <span className="flex-shrink-0 mx-4 text-slate-500 text-sm font-semibold uppercase tracking-wider">OR</span>
+                    <div className="flex-grow border-t border-slate-800"></div>
+                  </div>
+
+                  {/* OPTION 2: YOUTUBE URL */}
+                  <div
+                    className={`transition-all duration-300 ${(aiPrompt.trim() || pdfFile) ? "opacity-40 grayscale pointer-events-none" : "opacity-100"}`}
+                  >
+                    <label className="block text-sm font-semibold text-slate-400 mb-2">YouTube Video URL</label>
+                    <div className="relative">
+
+                      <input
+                        type="text"
+                        placeholder="https://www.youtube.com/watch?v=..."
+                        value={youtubeUrl}
+                        onChange={(e) => setYoutubeUrl(e.target.value)}
+                        disabled={!!(aiPrompt.trim() || pdfFile)}
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 pl-12 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 outline-none transition-all text-slate-200 placeholder:text-slate-600 disabled:cursor-not-allowed"
+                      />
+                      <div className="absolute left-4 top-1/2 -translate-y-1/2 text-rose-500/50 pointer-events-none">
+                        <svg
+                          xmlns="http://www.w3.org/2000/svg"
+                          width="20"
+                          height="20"
+                          viewBox="0 0 24 24"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="2"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        >
+                          <path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"></path>
+                          <polygon points="9.75 15.02 15.5 11.75 9.75 8.48 9.75 15.02"></polygon>
+                        </svg>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Validation Note */}
+                  {((aiPrompt.trim() || pdfFile) && youtubeUrl.trim()) && (
+                    <p className="text-xs text-rose-400 text-center animate-pulse">
+                      Please clear one option to use the other.
+                    </p>
+                  )}
                 </div>
 
                 <div className="flex justify-end gap-3">

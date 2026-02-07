@@ -4,6 +4,9 @@ import json
 import requests
 from typing import List, Dict, Any
 import logging
+from youtube_transcript_api import YouTubeTranscriptApi
+
+
 
 logger = logging.getLogger(__name__)
 
@@ -435,3 +438,21 @@ DO NOT include markdown, comments, or text outside the JSON.
     except Exception as e:
         logger.error(f"Parse failed: {str(e)}\nText: {text[:500]}")
         return {"error": "parse_failed", "exception": str(e), "raw": text[:500]}
+
+
+
+def get_text_from_urlid(video_id):
+    try:
+        ytt_api = YouTubeTranscriptApi()
+        transcript = ytt_api.fetch(video_id)
+
+        text = " ".join(snippet.text for snippet in transcript.snippets)
+        return text
+
+    except Exception as e:
+        return "Transcript not available: " + str(e)
+
+
+
+
+        

@@ -1,8 +1,8 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .services import generate_quiz_with_ai, analyze_weak_topics_with_ai
-import pdfplumber
+from .services import generate_quiz_with_ai, analyze_weak_topics_with_ai, get_text_from_urlid
+import pdfplumber,re
 
 class GenerateQuizAPIView(APIView):
     permission_classes = [IsAuthenticated]
@@ -64,6 +64,7 @@ class GenerateQuizAPIView(APIView):
         return Response({"result": result})
 
 class AnalyzeWeakTopicsAPIView(APIView):
+
     """
     Endpoint to analyze quiz results and identify weak topics using AI/NLP
     """
@@ -92,3 +93,29 @@ class AnalyzeWeakTopicsAPIView(APIView):
             return Response(analysis_result, status=200)
         else:
             return Response(analysis_result, status=500)
+
+
+class GetTextOutOfUrl(APIView):
+    permission_classes = [IsAuthenticated]
+
+    YOUTUBE_ID_REGEX = re.compile(
+        r"(?:v=|\/)([0-9A-Za-z_-]{11})(?:[?&\/]|$)"
+    )
+
+    def extract_video_id(self, url: str):
+        match = self.YOUTUBE_ID_REGEX.search(url)
+        return match.group(1) if match else None
+
+    def post(self, request):
+        url = request.data.get("url")
+        if not url:
+            return Response({"error": "url_required"}, status=400)
+
+        video_id = self.extract_video_id(url)
+        if not video_id:
+            return Response({"error": "invalid_youtube_url"}, status=400)
+
+        text = get_text_from_urlid(video_id)
+
+        return Response({"text": text})
+
